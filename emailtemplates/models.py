@@ -7,7 +7,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 
 from fields import SeparatedValuesField
-import app_settings
+from app_settings import AppSettings
 
 class EmailTemplateError(ValueError):
     pass
@@ -54,14 +54,14 @@ class EmailMessageTemplate(models.Model,EmailMessage):
     #Fields to override from EmailMessage
     subject_template = models.CharField(max_length=2000)
     body_template = models.TextField()
-    sender = models.EmailField(max_length=75, blank=True, default='', verbose_name="'From' Email", help_text="The address this email should appear to be sent 'from'.  If blank, defaults to '{0}'.".format(app_settings.EMAILTEMPLATES_DEFAULT_FROM_EMAIL))
+    sender = models.EmailField(max_length=75, blank=True, default='', verbose_name="'From' Email", help_text="The address this email should appear to be sent 'from'.  If blank, defaults to '{0}'.".format(AppSettings.EMAILTEMPLATES_DEFAULT_FROM_EMAIL))
     base_cc = SeparatedValuesField(max_length=200, blank=True, default='', verbose_name="CC", help_text="An optional list of email addresses to be CCed when this template is sent (in addition to any addresses specified when the message is sent)")
     base_bcc = SeparatedValuesField(max_length=200, blank=True, default='', verbose_name="BCC", help_text="An optional list of email addresses to be BCCed when this template is sent (in addition to any addresses specified when the message is sent)")
     
     #Other information
     description = models.TextField()
     enabled = models.BooleanField(default=True,help_text="When unchecked, this email will not be sent.")
-    suppress_log = models.BooleanField(default=False,help_text="When checked, a log entry will not be generated when this email is sent, regardless of the EMAILTEMPLATES_LOG_EMAILS setting, which is currently '{0}'. Can be used for frequently sent, low value messages.".format(app_settings.EMAILTEMPLATES_LOG_EMAILS))
+    suppress_log = models.BooleanField(default=False,help_text="When checked, a log entry will not be generated when this email is sent, regardless of the EMAILTEMPLATES_LOG_EMAILS setting, which is currently '{0}'. Can be used for frequently sent, low value messages.".format(AppSettings.EMAILTEMPLATES_LOG_EMAILS))
     edited_date = models.DateTimeField(auto_now=True,editable=False,blank=True)
     edited_user = models.TextField(max_length=30,editable=False,blank=True) 
     
@@ -124,7 +124,7 @@ class EmailMessageTemplate(models.Model,EmailMessage):
         sender, and finally the setting value.
         """ 
         return self._instance_from or self.sender or \
-            app_settings.EMAILTEMPLATES_DEFAULT_FROM_EMAIL
+            AppSettings.EMAILTEMPLATES_DEFAULT_FROM_EMAIL
     
     @from_email.setter
     def from_email(self,value):
@@ -207,7 +207,7 @@ class EmailMessageTemplate(models.Model,EmailMessage):
                 self._errors.append("Sending email failed: {0}".format(send_err))
         
         #Log the results
-        if app_settings.EMAILTEMPLATES_LOG_EMAILS and not self.suppress_log:
+        if AppSettings.EMAILTEMPLATES_LOG_EMAILS and not self.suppress_log:
             log = Log(template=self,
                       recipients=self.recipients(),
                       status=Log.STATUS.FAILURE if len(self._errors) else Log.STATUS.SUCCESS,
