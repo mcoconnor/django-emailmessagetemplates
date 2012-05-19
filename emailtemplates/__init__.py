@@ -1,21 +1,14 @@
-from django.conf import settings
+"""
+Tools for sending templated emails
+"""
 
-__all__ = []
+import copy
 
-_DEFAULTS = {
-    'EMAILTEMPLATES_DEFAULT_FROM_EMAIL': settings.DEFAULT_FROM_EMAIL,
-    'EMAILTEMPLATES_LOG_EMAILS': True,
-    'EMAILTEMPLATES_LOG_RETENTION_DAYS': 30,
-}
+from django.core.mail import get_connection
 
-for key, value in _DEFAULTS.iteritems():
-    try:
-        getattr(settings, key)
-    except AttributeError:
-        setattr(settings, key, value)
-    # Suppress errors from DJANGO_SETTINGS_MODULE not being set
-    except ImportError:
-        pass
+from models import EmailMessageTemplate, Log, EmailTemplateError
+from utils import send_mail, send_mass_mail, mail_admins, mail_managers
 
-class EmailTemplateError(ValueError):
-    pass
+
+__all__ = [EmailMessageTemplate, Log, EmailTemplateError, send_mail, 
+           send_mass_mail, mail_admins, mail_managers]

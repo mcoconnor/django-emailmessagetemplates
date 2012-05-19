@@ -5,11 +5,39 @@ from django.template.loader import render_to_string
 from django.template import Context, Template
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
-from django.conf import settings
 
-from . import EmailTemplateError
 from fields import SeparatedValuesField
+import app_settings
 
+class EmailTemplateError(ValueError):
+    pass
+
+class EmailMessageTemplateManager(models.Manager):
+    
+    def get_template(self, name, related_object=None):
+        """
+        If a related object is specified, we'll first try to retrieve a template 
+        that matches both the name and the object, and if none exists, we'll try 
+        to retrieve a template with the specified name without a related object 
+        instead (to support situations where some objects have a specialized 
+        template, but, when none exists, we want to fall back to a default). 
+        """
+        if related_object:
+            object_id = related_object.pk
+            content_type = ContentType.objects.get_for_model(related_object)
+        else:
+            object_id = None
+            content_type = None
+
+        try:
+            return self.get(name=name,object_id=object_id, 
+                            content_type=content_type, enabled=True)
+        except EmailMessageTemplate.DoesNotExist:
+            if not related_object:
+                raise
+            return self.get(name=name, object_id=None, content_type=None, 
+                            enabled=True)
+        
 
 class EmailMessageTemplate(models.Model,EmailMessage):
     """
@@ -26,23 +54,39 @@ class EmailMessageTemplate(models.Model,EmailMessage):
     #Fields to override from EmailMessage
     subject_template = models.CharField(max_length=2000)
     body_template = models.TextField()
-    sender = models.EmailField(max_length=75, blank=True, default='', verbose_name="'From' Email", help_text="The address this email should appear to be sent 'from'.  If blank, defaults to '{0}'.".format(settings.EMAILTEMPLATES_DEFAULT_FROM_EMAIL))
-    base_cc = SeparatedValuesField(max_length=200, blank=True, default='', verbose_name="CC", help_text="An optional list of email addresses to be CCed when this template is sent (in addition to any addresses specified by the system)")
-    base_bcc = SeparatedValuesField(max_length=200, blank=True, default='', verbose_name="BCC", help_text="An optional list of email addresses to be BCCed when this template is sent (in addition to any addresses specified by the system)")
+    sender = models.EmailField(max_length=75, blank=True, default='', verbose_name="'From' Email", help_text="The address this email should appear to be sent 'from'.  If blank, defaults to '{0}'.".format(app_settings.EMAILTEMPLATES_DEFAULT_FROM_EMAIL))
+    base_cc = SeparatedValuesField(max_length=200, blank=True, default='', verbose_name="CC", help_text="An optional list of email addresses to be CCed when this template is sent (in addition to any addresses specified when the message is sent)")
+    base_bcc = SeparatedValuesField(max_length=200, blank=True, default='', verbose_name="BCC", help_text="An optional list of email addresses to be BCCed when this template is sent (in addition to any addresses specified when the message is sent)")
     
     #Other information
     description = models.TextField()
     enabled = models.BooleanField(default=True,help_text="When unchecked, this email will not be sent.")
-    suppress_log = models.BooleanField(default=False,help_text="When checked, a log entry will not be generated when this email is sent, regardless of the EMAILTEMPLATES_LOG_EMAILS setting, which is currently '{0}'. Can be used for frequently sent, low value messages.".format(settings.EMAILTEMPLATES_LOG_EMAILS))
+    suppress_log = models.BooleanField(default=False,help_text="When checked, a log entry will not be generated when this email is sent, regardless of the EMAILTEMPLATES_LOG_EMAILS setting, which is currently '{0}'. Can be used for frequently sent, low value messages.".format(app_settings.EMAILTEMPLATES_LOG_EMAILS))
     edited_date = models.DateTimeField(auto_now=True,editable=False,blank=True)
     edited_user = models.TextField(max_length=30,editable=False,blank=True) 
     
+    objects = EmailMessageTemplateManager()
     
     #Ensure compatibility with EmailMessage CC, BCC, and from_email data
+    _instance_to = []    
     _instance_cc = []
     _instance_bcc = []
     _instance_from = None
     
+    @property
+    def to(self):
+        """
+        The recipient addresses specified on the instance.
+        """
+        return self._instance_to
+    
+    @to.setter
+    def to(self,value):
+        """
+        Set the recipient addresses on the instance.
+        """
+        self._instance_to = value
+
     @property
     def cc(self):
         """
@@ -66,7 +110,7 @@ class EmailMessageTemplate(models.Model,EmailMessage):
         """
         return list(set(self._instance_bcc) | set(self.base_bcc if self.base_ccb is not None else []))
     
-    @cc.setter
+    @bcc.setter
     def bcc(self,value):
         """
         Add any addresses not in the template's BCC list to the instance list.
@@ -80,7 +124,7 @@ class EmailMessageTemplate(models.Model,EmailMessage):
         sender, and finally the setting value.
         """ 
         return self._instance_from or self.sender or \
-            settings.EMAILTEMPLATES_DEFAULT_FROM_EMAIL
+            app_settings.EMAILTEMPLATES_DEFAULT_FROM_EMAIL
     
     @from_email.setter
     def from_email(self,value):
@@ -90,22 +134,38 @@ class EmailMessageTemplate(models.Model,EmailMessage):
         return
             
     def __unicode__(self):
+        status = " (Disabled)" if not self.enabled else ""
         if self.related_object:
-            return "{0} for {1}".format(self.name,self.related_object)
-        return self.name
-    
-    
+            return "{0} for {1}{2}".format(self.name,self.related_object,status)
+        return self.name + status
+
     # Preparing and sending messages   
     _prepared = False
     _errors = []
     
-    def prepare(self, context={}, from_email=None, to=[], cc=[], bcc=[], connection=None, attachments=None, headers={}):
+    def _render_subject(self,context):
+        try:
+            return subject_prefix + Template(self.subject_template).render(c)
+        except  Exception as e:
+            self._errors.append("Failed to render subject: ({0})".format(e))
+        return ""
+
+    def _render_body(self,context):
+        try:
+            return Template(self.body_template).render(c)
+        except Exception as e:
+            self._errors.append("Failed to render body: ({0})".format(e))
+        return ""
+
+    def prepare(self, context={}, from_email=None, to=[], cc=[], bcc=[], 
+                connection=None, attachments=None, headers={}, 
+                subject_prefix=""):
         """
         Initialize a single email message and render the subject and body 
         using a supplied context.
         """
         
-        #Set  up the EmailMessage
+        #Set up the EmailMessage
         if from_email:
             self._instance_from = from_email
         if to:
@@ -124,23 +184,16 @@ class EmailMessageTemplate(models.Model,EmailMessage):
         
         #Render the templates
         c = Context(context)
-        success = True
-        
-        try:
-            self.subject = Template(self.subject_template).render(c)
-        except  Exception as e:
-            self._errors.append("Failed to render subject: ({0})".format(e))
-            
-        try:
-            self.body = Template(self.body_template).render(c)
-        except Exception as e:
-            self._errors.append("Failed to render body: ({0})".format(e))
-            
+        self.subject = self._render_subject(c)
+        self.body = self._render_body(c) 
+           
         self._prepared = True
         
                 
     def send(self, fail_silently=False):
-        """Sends the email message."""
+        """
+        Sends the email message.
+        """
         
         assert self._prepared, 'The EmailMessageTemplate must be prepared before sending.'
         
@@ -149,14 +202,12 @@ class EmailMessageTemplate(models.Model,EmailMessage):
         send_error = None
         if not len(self._errors):
             try:
-                print self.subject
-                print self.body
                 result = super(EmailMessageTemplate,self).send(fail_silently=False)
             except Exception as send_error:
                 self._errors.append("Sending email failed: {0}".format(send_err))
         
         #Log the results
-        if settings.EMAILTEMPLATES_LOG_EMAILS and not self.suppress_log:
+        if app_settings.EMAILTEMPLATES_LOG_EMAILS and not self.suppress_log:
             log = Log(template=self,
                       recipients=self.recipients(),
                       status=Log.STATUS.FAILURE if len(self._errors) else Log.STATUS.SUCCESS,
@@ -174,9 +225,14 @@ class EmailMessageTemplate(models.Model,EmailMessage):
         
     class Meta:
         ordering = ('name',)
-        verbose_name="Template"
+        unique_together = (("name", "content_type", "object_id"),)
+        verbose_name="Email Template"
     
 class Log(models.Model):
+    """
+    The record of one attempt to send a templated email message.
+    """
+
     class STATUS:
         SUCCESS = 'S'
         FAILURE = 'F'
