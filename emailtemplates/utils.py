@@ -1,3 +1,9 @@
+import copy
+
+from django.core.mail import get_connection
+
+from models import EmailMessageTemplate
+
 def send_mail(name, related_object=None, context={}, from_email=None, 
               recipient_list=[], fail_silently=False, auth_user=None, 
                auth_password=None, connection=None):
