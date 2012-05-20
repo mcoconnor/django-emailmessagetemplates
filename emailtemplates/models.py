@@ -171,29 +171,32 @@ class EmailMessageTemplate(models.Model,EmailMessage):
         """
         return
 
-    def prepare(self, context={}, from_email=None, to=[], cc=[], bcc=[], 
-                connection=None, attachments=None, headers={}, 
-                subject_prefix=""):
+    def prepare(self, context=None, from_email=None, to=None, cc=None, bcc=None, 
+                connection=None, attachments=None, headers=None, 
+                subject_prefix=None):
         """
-        Initialize a single email message with sender/recipient addresses and 
-        context
+        Shortcut to initialize a single email message with sender/recipient
+        addresses, context, and other email parameters in a single function call
         """
-        if from_email:
-            self._instance_from = from_email
-        if to:
-            self.to = to   
-        if cc:
-            self.cc = cc
-        if bcc:
-            self.bcc = bcc
-        if context:
+        if context is not None:
             self.context = context
-        if subject_prefix:
+        if from_email is not None:
+            self._instance_from = from_email
+        if to is not None:
+            self.to = to   
+        if cc is not None:
+            self.cc = cc
+        if bcc is not None:
+            self.bcc = bcc
+        if connection is not None:
+            self.connection = connection
+        if attachments is not None:
+            self.attachments = attachments
+        if headers is not None:
+            self.headers = headers
+        if subject_prefix is not None:
             self.subject_prefix = subject_prefix
 
-        self.attachments = attachments or []
-        self.extra_headers = headers or {}
-        self.connection = connection
                         
     def send(self, fail_silently=False):
         """
