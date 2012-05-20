@@ -7,8 +7,6 @@ from django.contrib.contenttypes import generic
 from fields import SeparatedValuesField, validate_template_syntax
 from app_settings import AppSettings
 
-class EmailTemplateError(ValueError):
-    pass
 
 class EmailMessageTemplateManager(models.Manager):
     
@@ -147,7 +145,10 @@ class EmailMessageTemplate(models.Model,EmailMessage):
 
     @context.setter
     def context(self,value):
-        self._context = Context(value)
+        if issubclass(type(value),Context):
+            self._context = value
+        else:
+            self._context = Context(value)
 
     @property
     def subject(self):
@@ -212,18 +213,16 @@ class EmailMessageTemplate(models.Model,EmailMessage):
         
         #Log the results
         if AppSettings.EMAILTEMPLATES_LOG_EMAILS and not self.suppress_log:
+            message = "Sending email failed: " + send_error.message if send_error else ''
             log = Log(template=self,
                       recipients=self.recipients(),
-                      status=Log.STATUS.FAILURE if len(self._errors) else Log.STATUS.SUCCESS,
-                      message="Sending email failed: " + send_error).save()
+                      status=Log.STATUS.FAILURE if send_error else Log.STATUS.SUCCESS,
+                      message=message).save()
             
         #Raise an exception if the user has requested it
-        if not fail_silently:
-            if send_error:
-                raise send_error
-            if len(self._errors):
-                raise EmailTemplateError(', '.join(self._errors))
-            
+        if not fail_silently and send_error:
+            raise send_error
+
         return result
         
     class Meta:

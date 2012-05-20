@@ -4,7 +4,7 @@ from django.contrib.sites.models import Site
 from django.contrib.contenttypes.models import ContentType
 from django.template import Context
 
-from models import EmailMessageTemplate, Log, EmailTemplateError
+from models import EmailMessageTemplate, Log
 
 class TemplateRetrievalTest(TestCase):
     """
@@ -214,9 +214,68 @@ class TemplatePreparationTest(TestCase):
         template.context = self.context
         self.assertEqual(template.body, "Test 1 body *WORLD*") 
 
+    #Ensure the prepare method populates the message correctly
+
+    def test_prepare_template(self):
+        """
+        Ensure the email parameters are set correctly by the prepare method 
+        """ 
+        template = EmailMessageTemplate.objects.get_template("Template 1")
+        template.prepare(context=self.context, 
+                         from_email='from@example.com', 
+                         to=['to@example.com'], 
+                         cc=['cc@example.com'], 
+                         bcc=['bcc@example.com'], 
+                         subject_prefix='[PREFIX] ')
+        self.assertEqual(template.subject, "[PREFIX] Test 1 Subject *HELLO*")
+        self.assertEqual(template.body, "Test 1 body *WORLD*") 
+        self.assertEqual(template.from_email, 'from@example.com') 
+        self.assertEqual(template.to, ['to@example.com'])  
+        self.assertEqual(template.cc, ['cc@example.com']) 
+        self.assertEqual(template.bcc, ['bcc@example.com']) 
+
 class TemplateSendingTest(TestCase):
+    """
+    Ensure that the emails are actually composed and sent successfully and that 
+    logs are generated (or not) when appropriate
+    """
     fixtures = ['test_templates',]
+    context = {'hello': '*HELLO*', 'world': '*WORLD*'}
 
     # Email sending
+    def test_send_email_success(self):
+        """Ensure that an email can be successfully sent to the outbox"""
+        template = EmailMessageTemplate.objects.get_template("Template 1")
+        template.prepare(context=self.context, 
+                         from_email='from@example.com', 
+                         to=['to@example.com'], 
+                         cc=['cc@example.com'], 
+                         bcc=['bcc@example.com'], 
+                         subject_prefix='[PREFIX] ')
+
+        template.send()
+
+        # Test that one message has been sent.
+        self.assertEqual(len(mail.outbox), 1)
+
+        # Verify that the subject of the first message is correct.
+        self.assertEqual(mail.outbox[0].subject, '[PREFIX] Test 1 Subject *HELLO*')
+        self.assertEqual(mail.outbox[0].body, "Test 1 body *WORLD*") 
+        self.assertEqual(mail.outbox[0].from_email, 'from@example.com') 
+        self.assertEqual(mail.outbox[0].to, ['to@example.com'])  
+        self.assertEqual(mail.outbox[0].cc, ['cc@example.com']) 
+        self.assertEqual(mail.outbox[0].bcc, ['bcc@example.com'])
 
     # Message logging
+    def test_logged_email(self):
+        pass
+
+class TemplateValidatorTest(TestCase):
+    pass
+
+class UtilityFunctionTest(TestCase):
+    pass
+
+class ManagementCommandsTest(TestCase):
+    pass
+
