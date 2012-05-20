@@ -2,10 +2,17 @@ from django.core import mail
 from django.test import TestCase
 from django.contrib.sites.models import Site
 from django.contrib.contenttypes.models import ContentType
+from django.template import Context
 
 from models import EmailMessageTemplate, Log, EmailTemplateError
 
 class TemplateRetrievalTest(TestCase):
+    """
+    Ensure that template objects are retrieved correctly from the database based 
+    on queries by name and object, respecting the enabled flag and the fallback 
+    behavior for object-based queries.  Queries that do not match active 
+    templates should raise exceptions.
+    """ 
     fixtures = ['test_templates',]
 
     # Simple named template retrievals
@@ -26,7 +33,7 @@ class TemplateRetrievalTest(TestCase):
             "EmailMessageTemplate matching query does not exist.",
             lambda: EmailMessageTemplate.objects.get_template("Template 3"))
 
-    # Retreievals o templates with specified objects
+    # Retrievals of templates with specified objects
     def test_retrieve_object_template(self):
         """"Ensure the correct template is returned when queried with name and object"""
 	site = Site.objects.get(pk=1)
@@ -58,20 +65,154 @@ class TemplateRetrievalTest(TestCase):
         template = EmailMessageTemplate.objects.get_template("Template 2",related_object=site)
         self.assertEqual(template.pk, 2)
 
-class TemplateRenderTest(TestCase):
+class TemplatePreparationTest(TestCase):
+    """
+    Ensure that template data is correctly produced when a template is 
+    instantiated and prepared for sending.  This includes assemling the From, CC 
+    and BCC address lists and rendering the subject and body templates. 
+    """
     fixtures = ['test_templates',]
+    context = {'hello': '*HELLO*', 'world': '*WORLD*'}
+
+    # Ensure the sender address is set correctly
+    def test_default_from(self):
+        """
+        If not specified in the template or on the instance, the from address is 
+        pulled from settings.  If specified, this will be the 
+        EMAILTEMPLATES_DEFAULT_FROM_EMAIL setting, else the DEFAULT_FROM_EMAIL 
+        setting.
+        """
+        template = EmailMessageTemplate.objects.get_template("Template 1")
+        with self.settings(DEFAULT_FROM_EMAIL='test1@example.com'):
+            self.assertEqual(template.from_email, 'test1@example.com')
+            with self.settings(EMAILTEMPLATES_DEFAULT_FROM_EMAIL='test2@example.com'):
+                self.assertEqual(template.from_email, 'test2@example.com')
+
+    def test_from_setter(self):
+        """
+        The 'from' setter shouldn't affect anything (to prevent EmailMessage 
+        from messing with the template values).
+        """
+        template = EmailMessageTemplate.objects.get_template("Template 1")
+        with self.settings(DEFAULT_FROM_EMAIL='test1@example.com'):
+            template.from_email = 'dontdoit@example.com'
+            self.assertEqual(template.from_email, 'test1@example.com')
+
+    def test_template_specified_from(self):
+        """
+        If a from address is specified on the template, use that instead.
+        """
+        template = EmailMessageTemplate.objects.get_template("Template 2")
+        with self.settings(DEFAULT_FROM_EMAIL='dontdoit@example.com'):
+            self.assertEqual(template.from_email, 'example@example.com')
+
+    def test_prepare_specified_from(self):
+        """
+        If a from address is specified on the template, use that instead.
+        """
+        template = EmailMessageTemplate.objects.get_template("Template 2")
+        with self.settings(DEFAULT_FROM_EMAIL='dontdoit@example.com'):
+            template.prepare(from_email='inprepare@example.com')
+            self.assertEqual(template.from_email, 'inprepare@example.com')
+
+    # Ensure the "to" address is set correctly
+
+    def test_instance_to(self):
+        """Ensure the "to" email set on the instance is used""" 
+        template = EmailMessageTemplate.objects.get_template("Template 2")
+        template.to=['inprepare@example.com']
+        self.assertEqual(template.to, ['inprepare@example.com'])
+        
+
+    # Ensure the "CC" address list is set correctly
+
+    def test_instance_cc(self):
+        """Ensure the "cc" email list set o the instance is used""" 
+        template = EmailMessageTemplate.objects.get_template("Template 1")
+        template.cc=['inprepare@example.com','inprepare2@example.com']
+        cc = template.cc
+        cc.sort()
+        self.assertEqual(cc, ['inprepare2@example.com','inprepare@example.com'])
+
+    def test_template_cc(self):
+        """
+        Ensure the "cc" email list set in the template is used
+        """ 
+        template = EmailMessageTemplate.objects.get_template("Template 2")
+        cc = template.cc
+        cc.sort()
+        self.assertEqual(cc, ['a@example.com','b@example.com']) 
+
+    def test_instance_template_cc(self):
+        """
+        Ensure the "cc" email list seton the instance is used in 
+        conjunction with cc addresses in the template
+        """ 
+        template = EmailMessageTemplate.objects.get_template("Template 2")
+        template.cc=['inprepare@example.com','inprepare2@example.com']
+        cc = template.cc
+        cc.sort()
+        self.assertEqual(cc, ['a@example.com','b@example.com',
+                              'inprepare2@example.com','inprepare@example.com']) 
+
+    # Ensure the "BCC" address list is set correctly
+    def test_instance_bcc(self):
+        """Ensure the "bcc" email list set on the instance is used""" 
+        template = EmailMessageTemplate.objects.get_template("Template 1")
+        template.bcc=['inprepare@example.com','inprepare2@example.com']
+        bcc = template.bcc
+        bcc.sort()
+        self.assertEqual(bcc, ['inprepare2@example.com','inprepare@example.com'])
+
+    def test_template_bcc(self):
+        """
+        Ensure the "bcc" email list set in the template is used
+        """ 
+        template = EmailMessageTemplate.objects.get_template("Template 2")
+        bcc = template.bcc
+        bcc.sort()
+        self.assertEqual(bcc, ['c@example.com','d@example.com']) 
+
+    def test_instance_template_bcc(self):
+        """
+        Ensure the "bcc" email list set on the instance is used in 
+        conjunction with bcc addresses in the template
+        """ 
+        template = EmailMessageTemplate.objects.get_template("Template 2")
+        template.bcc=['inprepare@example.com','inprepare2@example.com']
+        bcc = template.bcc
+        bcc.sort()
+        self.assertEqual(bcc, ['c@example.com','d@example.com',
+                               'inprepare2@example.com','inprepare@example.com']) 
+
+    # Ensure the subject renders correctly
 
     def test_render_subject_template(self):
-        pass
+        """
+        Ensure the subject renders as expected 
+        """ 
+        template = EmailMessageTemplate.objects.get_template("Template 1")
+        template.context = self.context
+        self.assertEqual(template.subject, "Test 1 Subject *HELLO*") 
 
-    def test_render_invalid_subject_template(self):
-        pass
+    def test_render_prefixed_subject_template(self):
+        """
+        Ensure the subject renders as expected with a specified prefix
+        """ 
+        template = EmailMessageTemplate.objects.get_template("Template 1")
+        template.context = self.context
+        template.subject_prefix = "[PREFIX] "
+        self.assertEqual(template.subject, "[PREFIX] Test 1 Subject *HELLO*")
+
+    # Ensure the body renders correctly
 
     def test_render_body_template(self):
-        pass
-
-    def test_render_body_subject_template(self):
-        pass
+        """
+        Ensure the body renders as expected 
+        """ 
+        template = EmailMessageTemplate.objects.get_template("Template 1")
+        template.context = self.context
+        self.assertEqual(template.body, "Test 1 body *WORLD*") 
 
 class TemplateSendingTest(TestCase):
     fixtures = ['test_templates',]
