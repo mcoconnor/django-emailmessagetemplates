@@ -1,4 +1,6 @@
 from django.db import models
+from django.core.exceptions import ValidationError
+from django.template import Context, Template, TemplateSyntaxError
 
 class SeparatedValuesField(models.CharField):
     """
@@ -24,3 +26,14 @@ class SeparatedValuesField(models.CharField):
     def value_to_string(self, obj):
         value = self._get_val_from_obj(obj)
         return ",".join(value)
+
+
+def validate_template_syntax(value):
+    """
+    Ensure that there aren't any gross errors in a template string
+    """
+    print 'hello'
+    try:
+        print Template(value).render(Context({}))
+    except TemplateSyntaxError, e:
+        raise ValidationError("Invalid Template: " + e.message)

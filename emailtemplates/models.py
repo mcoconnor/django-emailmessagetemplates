@@ -1,12 +1,10 @@
 from django.db import models
 from django.core.mail import EmailMessage
-from django.core.validators import email_re
-from django.template.loader import render_to_string
 from django.template import Context, Template
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 
-from fields import SeparatedValuesField
+from fields import SeparatedValuesField, validate_template_syntax
 from app_settings import AppSettings
 
 class EmailTemplateError(ValueError):
@@ -52,8 +50,8 @@ class EmailMessageTemplate(models.Model,EmailMessage):
     related_object = generic.GenericForeignKey('content_type', 'object_id')
 	
     #Fields to override from EmailMessage
-    subject_template = models.CharField(max_length=2000)
-    body_template = models.TextField()
+    subject_template = models.CharField(max_length=2000, validators=[validate_template_syntax])
+    body_template = models.TextField(validators=[validate_template_syntax])
     sender = models.EmailField(max_length=75, blank=True, default='', verbose_name="'From' Email", help_text="The address this email should appear to be sent 'from'.  If blank, defaults to '{0}'.".format(AppSettings.EMAILTEMPLATES_DEFAULT_FROM_EMAIL))
     base_cc = SeparatedValuesField(max_length=200, blank=True, default='', verbose_name="CC", help_text="An optional list of email addresses to be CCed when this template is sent (in addition to any addresses specified when the message is sent)")
     base_bcc = SeparatedValuesField(max_length=200, blank=True, default='', verbose_name="BCC", help_text="An optional list of email addresses to be BCCed when this template is sent (in addition to any addresses specified when the message is sent)")
@@ -108,7 +106,7 @@ class EmailMessageTemplate(models.Model,EmailMessage):
         The unique set of BCC addresses specified either in the template or on 
         the instance.
         """
-        return list(set(self._instance_bcc) | set(self.base_bcc if self.base_ccb is not None else []))
+        return list(set(self._instance_bcc) | set(self.base_bcc if self.base_bcc is not None else []))
     
     @bcc.setter
     def bcc(self,value):
@@ -140,79 +138,81 @@ class EmailMessageTemplate(models.Model,EmailMessage):
         return self.name + status
 
     # Preparing and sending messages   
-    _prepared = False
-    _errors = []
-    
-    def _render_subject(self,context):
-        try:
-            return subject_prefix + Template(self.subject_template).render(c)
-        except  Exception as e:
-            self._errors.append("Failed to render subject: ({0})".format(e))
-        return ""
+    _context = Context({})
+    subject_prefix = ""
 
-    def _render_body(self,context):
-        try:
-            return Template(self.body_template).render(c)
-        except Exception as e:
-            self._errors.append("Failed to render body: ({0})".format(e))
-        return ""
+    @property
+    def context(self):
+        return self._context
+
+    @context.setter
+    def context(self,value):
+        self._context = Context(value)
+
+    @property
+    def subject(self):
+        return self.subject_prefix + Template(self.subject_template).render(self.context)
+    
+    @subject.setter
+    def subject(self,value):
+        """
+        No-op to prevent EmailMessage from stomping on the template 
+        """
+        return
+
+    @property
+    def body(self):
+        return Template(self.body_template).render(self.context)
+
+    @body.setter
+    def body(self,value):
+        """
+        No-op to prevent EmailMessage from stomping on the template 
+        """
+        return
 
     def prepare(self, context={}, from_email=None, to=[], cc=[], bcc=[], 
                 connection=None, attachments=None, headers={}, 
                 subject_prefix=""):
         """
-        Initialize a single email message and render the subject and body 
-        using a supplied context.
+        Initialize a single email message with sender/recipient addresses and 
+        context
         """
-        
-        #Set up the EmailMessage
         if from_email:
             self._instance_from = from_email
         if to:
-            assert not isinstance(to, basestring), '"to" argument must be a list or tuple'
             self.to = to   
         if cc:
-            assert not isinstance(cc, basestring), '"cc" argument must be a list or tuple'
             self.cc = cc
         if bcc:
-            assert not isinstance(bcc, basestring), '"bcc" argument must be a list or tuple'
             self.bcc = bcc
-            
+        if context:
+            self.context = context
+        if subject_prefix:
+            self.subject_prefix = subject_prefix
+
         self.attachments = attachments or []
         self.extra_headers = headers or {}
         self.connection = connection
-        
-        #Render the templates
-        c = Context(context)
-        self.subject = self._render_subject(c)
-        self.body = self._render_body(c) 
-           
-        self._prepared = True
-        
-                
+                        
     def send(self, fail_silently=False):
         """
         Sends the email message.
         """
-        
-        assert self._prepared, 'The EmailMessageTemplate must be prepared before sending.'
-        
-        #If there weren't problems preparing the message, try to send it
         result = None
         send_error = None
-        if not len(self._errors):
-            try:
-                result = super(EmailMessageTemplate,self).send(fail_silently=False)
-            except Exception as send_error:
-                self._errors.append("Sending email failed: {0}".format(send_err))
+
+        try:
+            result = super(EmailMessageTemplate,self).send(fail_silently=False)
+        except Exception as e:
+            send_error = e
         
         #Log the results
         if AppSettings.EMAILTEMPLATES_LOG_EMAILS and not self.suppress_log:
             log = Log(template=self,
                       recipients=self.recipients(),
                       status=Log.STATUS.FAILURE if len(self._errors) else Log.STATUS.SUCCESS,
-                      message='\n'.join(self._errors))
-            log.save()
+                      message="Sending email failed: " + send_error).save()
             
         #Raise an exception if the user has requested it
         if not fail_silently:
