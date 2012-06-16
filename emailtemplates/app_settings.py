@@ -5,6 +5,7 @@ class ClassProperty(property):
     def __get__(self, cls, owner):
         return self.fget.__get__(None, owner)()
 
+
 class AppSettings(object):
 
     @ClassProperty
@@ -16,7 +17,6 @@ class AppSettings(object):
         """
         return getattr(settings, 'EMAILTEMPLATES_DEFAULT_FROM_EMAIL', settings.DEFAULT_FROM_EMAIL)
 
-
     @ClassProperty
     @classmethod
     def EMAILTEMPLATES_LOG_EMAILS(cls):
@@ -27,7 +27,7 @@ class AppSettings(object):
         on the template model instance.
         """
         return getattr(settings, 'EMAILTEMPLATES_LOG_EMAILS', True)
-    
+
     @ClassProperty
     @classmethod
     def EMAILTEMPLATES_LOG_BODY(cls):
@@ -37,7 +37,6 @@ class AppSettings(object):
         prevent excess data retention.
         """
         return getattr(settings, 'EMAILTEMPLATES_LOG_BODY', False)
-    
 
     @ClassProperty
     @classmethod

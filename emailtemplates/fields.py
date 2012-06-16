@@ -2,24 +2,27 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from django.template import Context, Template, TemplateSyntaxError
 
+
 class SeparatedValuesField(models.CharField):
     """
     Adapted from http://justcramer.com/2008/08/08/custom-fields-in-django/
     """
     __metaclass__ = models.SubfieldBase
-    
+
     def __init__(self, *args, **kwargs):
         self.token = kwargs.pop('token', ',')
         super(SeparatedValuesField, self).__init__(*args, **kwargs)
 
     def to_python(self, value):
-        if not value: return
+        if not value:
+            return
         if isinstance(value, list):
             return value
         return value.split(self.token)
 
     def get_prep_value(self, value):
-        if not value: return ''
+        if not value:
+            return ''
         assert(isinstance(value, list) or isinstance(value, tuple))
         return self.token.join([unicode(s) for s in value])
 

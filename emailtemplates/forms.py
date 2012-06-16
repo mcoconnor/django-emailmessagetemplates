@@ -3,6 +3,7 @@ from email.utils import getaddresses, formataddr
 from django import forms
 from django.utils.translation import ugettext_lazy as _
 
+
 class EmailListField(forms.CharField):
     """
     A Django form field which validates a list of email addresses.
@@ -11,12 +12,11 @@ class EmailListField(forms.CharField):
     default_error_messages = {
         'invalid': _('Please enter a valid list of e-mail addresses.')
     }
-        
-    def prepare_value(self,value):
+
+    def prepare_value(self, value):
         if isinstance(value, list) or isinstance(value, tuple):
             return ', '.join(value)
         return value
-        
         
     def clean(self, value):
         value = super(EmailListField, self).clean(value)

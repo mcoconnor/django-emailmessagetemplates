@@ -4,8 +4,9 @@ from django.core.mail import get_connection
 
 from models import EmailMessageTemplate
 
-def send_mail(name, related_object=None, context={}, from_email=None, 
-              recipient_list=[], fail_silently=False, auth_user=None, 
+
+def send_mail(name, related_object=None, context={}, from_email=None,
+              recipient_list=[], fail_silently=False, auth_user=None,
                auth_password=None, connection=None):
     """
     Easy wrapper for sending a single templated message to a recipient list.  
@@ -20,22 +21,22 @@ def send_mail(name, related_object=None, context={}, from_email=None,
     """
 
     try:
-        template = EmailMessageTemplate.objects.get(name=name,related_object=related_object)
+        template = EmailMessageTemplate.objects.get(name=name, related_object=related_object)
     except EmailMessageTemplate.DoesNotExist:
         if not related_object:
             raise
-        template = EmailMessageTemplate.objects.get(name=name,related_object=None)
+        template = EmailMessageTemplate.objects.get(name=name, related_object=None)
 
     connection = connection or get_connection(username=auth_user,
                                               password=auth_password,
                                               fail_silently=fail_silently)
 
-    template.prepare(context=context, from_email=from_email, to=recipient_list, 
+    template.prepare(context=context, from_email=from_email, to=recipient_list,
                      connection=connection)
     return template.send()
 
 
-def send_mass_mail(name, related_object=None, datatuple=(), fail_silently=False, 
+def send_mass_mail(name, related_object=None, datatuple=(), fail_silently=False,
                    auth_user=None, auth_password=None, connection=None):
     """
     Given a datatuple of (context, from_email, recipient_list), renders and 
@@ -54,36 +55,36 @@ def send_mass_mail(name, related_object=None, datatuple=(), fail_silently=False,
     """
 
     try:
-        template = EmailMessageTemplate.objects.get(name=name,related_object=related_object)
+        template = EmailMessageTemplate.objects.get(name=name, related_object=related_object)
     except EmailMessageTemplate.DoesNotExist:
         if not related_object:
             raise
-        template = EmailMessageTemplate.objects.get(name=name,related_object=None)
+        template = EmailMessageTemplate.objects.get(name=name, related_object=None)
 
     connection = connection or get_connection(username=auth_user,
                                               password=auth_password,
                                               fail_silently=fail_silently)
 
-    messages = [copy.deepcopy(template).prepare(context=context, 
-                                                from_email=from_email, 
-                                                to=recipient_list, 
+    messages = [copy.deepcopy(template).prepare(context=context,
+                                                from_email=from_email,
+                                                to=recipient_list,
                                                 connection=connection)
                 for (context, from_email, recipient_list) in datatuple]
- 
+
     return connection.send_messages(messages)
 
 
-def mail_admins(name, related_object=None, context={}, fail_silently=False, 
+def mail_admins(name, related_object=None, context={}, fail_silently=False,
                 connection=None):
     """Sends a message to the admins, as defined by the ADMINS setting."""
-    return send_mail(name,related_object,context,fail_silently=fail_silently,
+    return send_mail(name, related_object, context, fail_silently=fail_silently,
                      recipient_list=[a[1] for a in settings.ADMINS],
                      connection=connection)
 
 
-def mail_managers(name, related_object=None, context={}, fail_silently=False, 
+def mail_managers(name, related_object=None, context={}, fail_silently=False,
                 connection=None):
     """Sends a message to the managers, as defined by the MANAGERS setting."""
-    return send_mail(name,related_object,context,fail_silently=fail_silently,
+    return send_mail(name, related_object, context, fail_silently=fail_silently,
                      recipient_list=[a[1] for a in settings.MANAGERS],
                      connection=connection)

@@ -10,7 +10,7 @@ Installation
 
 Usage
 -----
-The central piece of functionality in this app is the EmailMessageTemplate class, which is a Django model that also inherits from Django's EmailMessage class.  Usage is derived from its parents: to select a template to send, query for it as a model.  To send an email, first populate and render it by calling the `prepare` method (analogous to the EmailMessage constructor) with the template context, recipients, and other data, and then call the `send` method.  For example:     
+The central piece of functionality in this app is the EmailMessageTemplate class, which is a Django model that also inherits from Django's EmailMessage class.  Usage is derived from its parents: to select a template to send, query for it as a model.  To send an email, first populate and render it by calling the `prepare` method (analogous to the EmailMessage constructor) with the template context, recipients, and other data, and then call the `send` method.  For example:
     
     t = EmailMessageTemplate.objects.get(name='Hello World')
     t.prepare(context={'a':'hello','b':'world'},to=['michael@mcoconnor.net',])
