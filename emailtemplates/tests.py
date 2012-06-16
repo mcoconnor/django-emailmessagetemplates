@@ -3,9 +3,10 @@ from django.test import TestCase
 from django.contrib.sites.models import Site
 from django.contrib.contenttypes.models import ContentType
 from django.template import Context
+from django.core.exceptions import ValidationError
 
 from models import EmailMessageTemplate, Log
-
+from fields import validate_template_syntax
 
 class TemplateRetrievalTest(TestCase):
     """
@@ -90,15 +91,6 @@ class TemplatePreparationTest(TestCase):
             with self.settings(EMAILTEMPLATES_DEFAULT_FROM_EMAIL='test2@example.com'):
                 self.assertEqual(template.from_email, 'test2@example.com')
 
-    def test_from_setter(self):
-        """
-        The 'from' setter shouldn't affect anything (to prevent EmailMessage 
-        from messing with the template values).
-        """
-        template = EmailMessageTemplate.objects.get_template("Template 1")
-        with self.settings(DEFAULT_FROM_EMAIL='test1@example.com'):
-            template.from_email = 'dontdoit@example.com'
-            self.assertEqual(template.from_email, 'test1@example.com')
 
     def test_template_specified_from(self):
         """
@@ -114,7 +106,7 @@ class TemplatePreparationTest(TestCase):
         """
         template = EmailMessageTemplate.objects.get_template("Template 2")
         with self.settings(DEFAULT_FROM_EMAIL='dontdoit@example.com'):
-            template.prepare(from_email='inprepare@example.com')
+            template.from_email='inprepare@example.com'
             self.assertEqual(template.from_email, 'inprepare@example.com')
     # Ensure the "to" address is set correctly
 
@@ -217,12 +209,13 @@ class TemplatePreparationTest(TestCase):
         Ensure the email parameters are set correctly by the prepare method 
         """
         template = EmailMessageTemplate.objects.get_template("Template 1")
-        template.prepare(context=self.context,
-                         from_email='from@example.com',
-                         to=['to@example.com'],
-                         cc=['cc@example.com'],
-                         bcc=['bcc@example.com'],
-                         subject_prefix='[PREFIX] ')
+        template.context=self.context
+        template.from_email='from@example.com'
+        template.to=['to@example.com']
+        template.cc=['cc@example.com']
+        template.bcc=['bcc@example.com']
+        template.subject_prefix='[PREFIX] '
+
         self.assertEqual(template.subject, "[PREFIX] Test 1 Subject *HELLO*")
         self.assertEqual(template.body, "Test 1 body *WORLD*")
         self.assertEqual(template.from_email, 'from@example.com')
@@ -243,13 +236,12 @@ class TemplateSendingTest(TestCase):
     def test_send_email_success(self):
         """Ensure that an email can be successfully sent to the outbox"""
         template = EmailMessageTemplate.objects.get_template("Template 1")
-        template.prepare(context=self.context,
-                         from_email='from@example.com',
-                         to=['to@example.com'],
-                         cc=['cc@example.com'],
-                         bcc=['bcc@example.com'],
-                         subject_prefix='[PREFIX] ')
-
+        template.context=self.context
+        template.from_email='from@example.com'
+        template.to=['to@example.com']
+        template.cc=['cc@example.com']
+        template.bcc=['bcc@example.com']
+        template.subject_prefix='[PREFIX] '
         template.send()
 
         # Test that one message has been sent.
@@ -265,14 +257,14 @@ class TemplateSendingTest(TestCase):
 
     # Message logging
     def test_logged_email(self): 
+        """Ensure log messages are generated correctly for sent emails"""
         template = EmailMessageTemplate.objects.get_template("Template 1")
-        template.prepare(context=self.context,
-                         from_email='from@example.com',
-                         to=['to@example.com'],
-                         cc=['cc@example.com'],
-                         bcc=['bcc@example.com'],
-                         subject_prefix='[PREFIX] ')
-
+        template.context=self.context
+        template.from_email='from@example.com'
+        template.to=['to@example.com']
+        template.cc=['cc@example.com']
+        template.bcc=['bcc@example.com']
+        template.subject_prefix='[PREFIX] '
         template.send()
         
         logs = Log.objects.all()
@@ -284,29 +276,48 @@ class TemplateSendingTest(TestCase):
                                              'bcc@example.com'])
 
     def test_log_suppressed_setting(self): 
+        """Ensure log messages are not generated when settings forbid it"""
         with self.settings(EMAILTEMPLATES_LOG_EMAILS=False):
             template = EmailMessageTemplate.objects.get_template("Template 1")
-            template.prepare(context=self.context, to=['to@example.com'])
+            template.context=self.context
+            template.to=['to@example.com']
             template.send()
         
             logs = Log.objects.all()
             self.assertEqual(len(logs),0)
 
     def test_log_suppressed_template(self): 
+        """Ensure log messages are not generated when templates forbid it"""
         template = EmailMessageTemplate.objects.get_template("Template 4")
-        template.prepare(context=self.context, to=['to@example.com'])
+        template.context=self.context
+        template.to=['to@example.com']
         template.send()
         
         logs = Log.objects.all()
         self.assertEqual(len(logs),0)
 
 class TemplateValidatorTest(TestCase):
-    pass
+    """
+    Ensure the template syntax validator correctly identifies invalid template 
+    strings
+    """
+
+    def test_valid_template(self):
+        """Ensure template validator passes valid templates"""
+        validate_template_syntax("hello {% if world %} world {% else %} you {% "
+                                 "endif %}")
+
+    def test_invalid_template(self):
+        """Ensure template validator rejects invalid templates"""
+        self.assertRaisesMessage(ValidationError,
+            "Invalid Template Syntax: Unclosed tag 'if'. Looking for one of: "
+            "elif, else, endif ", 
+            validate_template_syntax, 
+            "hello {% if world %} world")
 
 
 class UtilityFunctionTest(TestCase):
     pass
-
 
 class ManagementCommandsTest(TestCase):
     pass

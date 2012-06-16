@@ -125,9 +125,9 @@ class EmailMessageTemplate(models.Model, EmailMessage):
     @from_email.setter
     def from_email(self, value):
         """
-        No-op to prevent EmailMessage from ignoring the configured defaults 
+        Set the sender addresses on the instance.
         """
-        return
+        self._instance_from = value
 
     def __unicode__(self):
         status = " (Disabled)" if not self.enabled else ""
@@ -171,32 +171,6 @@ class EmailMessageTemplate(models.Model, EmailMessage):
         No-op to prevent EmailMessage from stomping on the template 
         """
         pass
-
-    def prepare(self, context=None, from_email=None, to=None, cc=None, bcc=None,
-                connection=None, attachments=None, headers=None,
-                subject_prefix=None):
-        """
-        Shortcut to initialize a single email message with sender/recipient
-        addresses, context, and other email parameters in a single function call
-        """
-        if context is not None:
-            self.context = context
-        if from_email is not None:
-            self._instance_from = from_email
-        if to is not None:
-            self.to = to
-        if cc is not None:
-            self.cc = cc
-        if bcc is not None:
-            self.bcc = bcc
-        if connection is not None:
-            self.connection = connection
-        if attachments is not None:
-            self.attachments = attachments
-        if headers is not None:
-            self.headers = headers
-        if subject_prefix is not None:
-            self.subject_prefix = subject_prefix
                         
     def send(self, fail_silently=False):
         """
@@ -223,6 +197,16 @@ class EmailMessageTemplate(models.Model, EmailMessage):
             raise send_error
 
         return result
+
+    def __init__(self,*args,**kwargs):
+        """
+        Initialize the template, ensuring that the from_email is not set 
+        unnecessarly
+        """
+        super(EmailMessageTemplate, self).__init__(*args,**kwargs)
+        #resetting sender to default so EmailMessage won't stomp on it
+        self.from_email = None
+        
 
     class Meta:
         ordering = ('name',)
