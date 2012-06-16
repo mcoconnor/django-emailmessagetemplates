@@ -109,5 +109,24 @@
       "base_bcc": null, 
       "name": "Template 3"
     }
+  },
+  {
+    "pk": 6, 
+    "model": "emailtemplates.emailmessagetemplate", 
+    "fields": {
+      "edited_user": "", 
+      "base_cc": null, 
+      "sender": "", 
+      "body_template": "Test 4 body {{world}}", 
+      "description": "", 
+      "enabled": true, 
+      "object_id": null, 
+      "edited_date": "2012-05-19T11:05:39.781", 
+      "suppress_log": true, 
+      "content_type": null, 
+      "subject_template": "Test 4 subject {{hello}}", 
+      "base_bcc": null, 
+      "name": "Template 4"
+    }
   }
 ]

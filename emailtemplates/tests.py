@@ -261,12 +261,44 @@ class TemplateSendingTest(TestCase):
         self.assertEqual(mail.outbox[0].from_email, 'from@example.com')
         self.assertEqual(mail.outbox[0].to, ['to@example.com'])
         self.assertEqual(mail.outbox[0].cc, ['cc@example.com'])
-        self.assertEqual(mail.outbox[0].bcc, ['bcc@example.com'])
+        self.assertEqual(mail.outbox[0].bcc, ['bcc@example.com'])     
 
     # Message logging
-    def test_logged_email(self):
-        pass
+    def test_logged_email(self): 
+        template = EmailMessageTemplate.objects.get_template("Template 1")
+        template.prepare(context=self.context,
+                         from_email='from@example.com',
+                         to=['to@example.com'],
+                         cc=['cc@example.com'],
+                         bcc=['bcc@example.com'],
+                         subject_prefix='[PREFIX] ')
 
+        template.send()
+        
+        logs = Log.objects.all()
+        self.assertEqual(len(logs),1)
+        self.assertEqual(logs[0].template.id,template.id)
+        self.assertEqual(logs[0].message,'')
+        self.assertEqual(logs[0].status,Log.STATUS.SUCCESS)
+        self.assertEqual(logs[0].recipients,['to@example.com', 'cc@example.com', 
+                                             'bcc@example.com'])
+
+    def test_log_suppressed_setting(self): 
+        with self.settings(EMAILTEMPLATES_LOG_EMAILS=False):
+            template = EmailMessageTemplate.objects.get_template("Template 1")
+            template.prepare(context=self.context, to=['to@example.com'])
+            template.send()
+        
+            logs = Log.objects.all()
+            self.assertEqual(len(logs),0)
+
+    def test_log_suppressed_template(self): 
+        template = EmailMessageTemplate.objects.get_template("Template 4")
+        template.prepare(context=self.context, to=['to@example.com'])
+        template.send()
+        
+        logs = Log.objects.all()
+        self.assertEqual(len(logs),0)
 
 class TemplateValidatorTest(TestCase):
     pass

@@ -51,8 +51,8 @@ class EmailMessageTemplate(models.Model, EmailMessage):
     subject_template = models.CharField(max_length=2000, validators=[validate_template_syntax])
     body_template = models.TextField(validators=[validate_template_syntax])
     sender = models.EmailField(max_length=75, blank=True, default='', verbose_name="'From' Email", help_text="The address this email should appear to be sent 'from'.  If blank, defaults to '{0}'.".format(AppSettings.EMAILTEMPLATES_DEFAULT_FROM_EMAIL))
-    base_cc = SeparatedValuesField(max_length=200, blank=True, default='', verbose_name="CC", help_text="An optional list of email addresses to be CCed when this template is sent (in addition to any addresses specified when the message is sent)")
-    base_bcc = SeparatedValuesField(max_length=200, blank=True, default='', verbose_name="BCC", help_text="An optional list of email addresses to be BCCed when this template is sent (in addition to any addresses specified when the message is sent)")
+    base_cc = SeparatedValuesField(blank=True, default='', verbose_name="CC", help_text="An optional list of email addresses to be CCed when this template is sent (in addition to any addresses specified when the message is sent)")
+    base_bcc = SeparatedValuesField(blank=True, default='', verbose_name="BCC", help_text="An optional list of email addresses to be BCCed when this template is sent (in addition to any addresses specified when the message is sent)")
 
     #Other information
     description = models.TextField()
@@ -159,7 +159,7 @@ class EmailMessageTemplate(models.Model, EmailMessage):
         """
         No-op to prevent EmailMessage from stomping on the template 
         """
-        return
+        pass
 
     @property
     def body(self):
@@ -170,7 +170,7 @@ class EmailMessageTemplate(models.Model, EmailMessage):
         """
         No-op to prevent EmailMessage from stomping on the template 
         """
-        return
+        pass
 
     def prepare(self, context=None, from_email=None, to=None, cc=None, bcc=None,
                 connection=None, attachments=None, headers=None,
@@ -245,7 +245,7 @@ class Log(models.Model):
                     )
 
     template = models.ForeignKey(EmailMessageTemplate)
-    recipients = models.TextField()
+    recipients = SeparatedValuesField()
     status = models.CharField(max_length=1, choices=STATUS_CHOICES)
     message = models.TextField()
     date = models.DateTimeField(auto_now_add=True)

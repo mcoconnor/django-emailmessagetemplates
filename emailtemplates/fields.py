@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.template import Context, Template, TemplateSyntaxError
 
 
-class SeparatedValuesField(models.CharField):
+class SeparatedValuesField(models.TextField):
     """
     Adapted from http://justcramer.com/2008/08/08/custom-fields-in-django/
     """
