@@ -20,12 +20,7 @@ def send_mail(name, related_object=None, context={}, from_email=None,
     If auth_password is None, the EMAIL_HOST_PASSWORD setting is used.
     """
 
-    try:
-        template = EmailMessageTemplate.objects.get(name=name, related_object=related_object)
-    except EmailMessageTemplate.DoesNotExist:
-        if not related_object:
-            raise
-        template = EmailMessageTemplate.objects.get(name=name, related_object=None)
+    template = EmailMessageTemplate.objects.get_template(name, related_object)
 
     connection = connection or get_connection(username=auth_user,
                                               password=auth_password,
@@ -54,12 +49,7 @@ def send_mass_mail(name, related_object=None, datatuple=(), fail_silently=False,
     when none exists, we want to fall back to a default). 
     """
 
-    try:
-        template = EmailMessageTemplate.objects.get(name=name, related_object=related_object)
-    except EmailMessageTemplate.DoesNotExist:
-        if not related_object:
-            raise
-        template = EmailMessageTemplate.objects.get(name=name, related_object=None)
+    template = EmailMessageTemplate.objects.get_template(name, related_object)
 
     connection = connection or get_connection(username=auth_user,
                                               password=auth_password,
