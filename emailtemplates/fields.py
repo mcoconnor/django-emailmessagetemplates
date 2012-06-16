@@ -2,6 +2,8 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from django.template import Context, Template, TemplateSyntaxError
 
+from south.modelsinspector import add_introspection_rules
+add_introspection_rules([], ["^emailtemplates\.fields\.SeparatedValuesField"])
 
 class SeparatedValuesField(models.TextField):
     """
@@ -35,8 +37,7 @@ def validate_template_syntax(value):
     """
     Ensure that there aren't any gross errors in a template string
     """
-    print 'hello'
     try:
-        print Template(value).render(Context({}))
+        Template(value).render(Context({}))
     except TemplateSyntaxError, e:
-        raise ValidationError("Invalid Template: " + e.message)
+        raise ValidationError("Invalid Template Syntax: " + e.message)
