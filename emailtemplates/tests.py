@@ -7,6 +7,7 @@ from django.core.exceptions import ValidationError
 
 from models import EmailMessageTemplate, Log
 from fields import validate_template_syntax
+from utils import send_mail, send_mass_mail, mail_admins, mail_managers
 
 class TemplateRetrievalTest(TestCase):
     """
@@ -317,7 +318,76 @@ class TemplateValidatorTest(TestCase):
 
 
 class UtilityFunctionTest(TestCase):
-    pass
+    """
+    Test the behavior of the 4 utility functions: send_mail, send_mass_mail, 
+    mail_admins, mail_managers
+    """
+    fixtures = ['test_templates',]
+    context = {'hello': '*HELLO*', 'world': '*WORLD*'}
+    context2 = {'hello': '-GOODBYE-', 'world': '-EARTH-'}
+
+    def test_send_mail(self):
+        """Ensure the send_mail function works"""
+        send_mail("Template 1", context=self.context, 
+                  recipient_list=['to@example.com'])
+
+        # Test that one message has been sent.
+        self.assertEqual(len(mail.outbox), 1)
+
+        # Verify that the subject of the first message is correct.
+        self.assertEqual(mail.outbox[0].subject, 'Test 1 Subject *HELLO*')
+        self.assertEqual(mail.outbox[0].body, "Test 1 body *WORLD*")
+        self.assertEqual(mail.outbox[0].to, ['to@example.com'])
+
+    def test_send_mass_mail(self):
+        """Ensure the send_mass_mail function works"""
+
+        datatuple = [(self.context,'from1@example.com',['to1@example.com']),
+                     (self.context2,'from2@example.com',['to2@example.com']),]
+        send_mass_mail("Template 1", datatuple=datatuple)
+
+        # Test that one message has been sent.
+        self.assertEqual(len(mail.outbox), 2)
+
+        # Verify that the subject of the first message is correct.
+        self.assertEqual(mail.outbox[0].subject, 'Test 1 Subject *HELLO*')
+        self.assertEqual(mail.outbox[0].body, "Test 1 body *WORLD*")
+        self.assertEqual(mail.outbox[0].to, ['to1@example.com'])
+
+        self.assertEqual(mail.outbox[1].subject, 'Test 1 Subject -GOODBYE-')
+        self.assertEqual(mail.outbox[1].body, "Test 1 body -EARTH-")
+        self.assertEqual(mail.outbox[1].to, ['to2@example.com'])
+
+    def test_mail_admins(self):
+        """Ensure the mail_admins function works"""
+        with self.settings(ADMINS=(('a','admin1@example.com'),('b','admin2@example.com'))):
+            mail_admins("Template 1", context=self.context)
+
+        # Test that one message has been sent.
+        self.assertEqual(len(mail.outbox), 1)
+
+        # Verify that the subject of the first message is correct.
+        self.assertEqual(mail.outbox[0].subject, 'Test 1 Subject *HELLO*')
+        self.assertEqual(mail.outbox[0].body, "Test 1 body *WORLD*")
+        self.assertEqual(mail.outbox[0].to, ['admin1@example.com', 
+                                             'admin2@example.com'])
+
+    def test_mail_managers(self):
+        """Ensure the mail_managers function works"""
+        with self.settings(MANAGERS=(('a','admin1@example.com'),('b','admin2@example.com'))):
+            mail_managers("Template 1", context=self.context)
+
+        # Test that one message has been sent.
+        self.assertEqual(len(mail.outbox), 1)
+
+        # Verify that the subject of the first message is correct.
+        self.assertEqual(mail.outbox[0].subject, 'Test 1 Subject *HELLO*')
+        self.assertEqual(mail.outbox[0].body, "Test 1 body *WORLD*")
+        self.assertEqual(mail.outbox[0].to, ['admin1@example.com', 
+                                             'admin2@example.com'])
+
+
+
 
 class ManagementCommandsTest(TestCase):
     pass

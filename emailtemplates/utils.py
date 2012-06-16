@@ -1,6 +1,7 @@
 import copy
 
 from django.core.mail import get_connection
+from django.conf import settings
 
 from models import EmailMessageTemplate
 
@@ -26,8 +27,11 @@ def send_mail(name, related_object=None, context={}, from_email=None,
                                               password=auth_password,
                                               fail_silently=fail_silently)
 
-    template.prepare(context=context, from_email=from_email, to=recipient_list,
-                     connection=connection)
+    template.context=context
+    template.from_email=from_email
+    template.to=recipient_list
+    template.connection=connection
+
     return template.send()
 
 
@@ -55,11 +59,14 @@ def send_mass_mail(name, related_object=None, datatuple=(), fail_silently=False,
                                               password=auth_password,
                                               fail_silently=fail_silently)
 
-    messages = [copy.deepcopy(template).prepare(context=context,
-                                                from_email=from_email,
-                                                to=recipient_list,
-                                                connection=connection)
-                for (context, from_email, recipient_list) in datatuple]
+    messages = []
+    for (context, from_email, recipient_list) in datatuple:
+        message = copy.deepcopy(template)
+        message.context=context
+        message.from_email=from_email
+        message.to=recipient_list
+        message.connection=connection
+        messages.append(message)
 
     return connection.send_messages(messages)
 
