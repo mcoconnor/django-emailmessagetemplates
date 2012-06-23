@@ -192,7 +192,11 @@ class EmailMessageTemplate(models.Model, EmailMessage):
             log = Log(template=self,
                       recipients=self.recipients(),
                       status=Log.STATUS.FAILURE if send_error else Log.STATUS.SUCCESS,
-                      message=message).save()
+                      message=message)
+            if AppSettings.EMAILTEMPLATES_LOG_CONTENT:
+                log.subject = self.subject
+                log.body = self.body
+            log.save()
 
         #Raise an exception if the user has requested it
         if not fail_silently and send_error:
@@ -234,6 +238,8 @@ class Log(models.Model):
     recipients = SeparatedValuesField()
     status = models.CharField(max_length=1, choices=STATUS_CHOICES)
     message = models.CharField(max_length=100, null=True, blank=True)
+    subject = models.CharField(max_length=2500, null=True, blank=True)
+    body = models.TextField(null=True, blank=True)
     date = models.DateTimeField(auto_now_add=True)
 
     def __unicode__(self):

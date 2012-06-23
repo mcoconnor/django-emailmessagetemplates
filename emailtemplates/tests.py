@@ -272,9 +272,31 @@ class TemplateSendingTest(TestCase):
         self.assertEqual(len(logs),1)
         self.assertEqual(logs[0].template.id,template.id)
         self.assertEqual(logs[0].message,None)
+        self.assertEqual(logs[0].subject,None)
+        self.assertEqual(logs[0].body,None)
         self.assertEqual(logs[0].status,Log.STATUS.SUCCESS)
         self.assertEqual(logs[0].recipients,['to@example.com', 'cc@example.com', 
                                              'bcc@example.com'])
+
+    def test_logged_email_content(self): 
+        """
+        Ensure log messages are generated correctly for sent emails including 
+        logged content
+        """
+        with self.settings(EMAILTEMPLATES_LOG_CONTENT=True):
+            template = EmailMessageTemplate.objects.get_template("Template 1")
+            template.context=self.context
+            template.to=['to@example.com']
+            template.send()
+        
+        logs = Log.objects.all()
+        self.assertEqual(len(logs),1)
+        self.assertEqual(logs[0].template.id,template.id)
+        self.assertEqual(logs[0].message,None)
+        self.assertEqual(logs[0].subject,"Test 1 Subject *HELLO*")
+        self.assertEqual(logs[0].body,"Test 1 body *WORLD*")
+        self.assertEqual(logs[0].status,Log.STATUS.SUCCESS)
+        self.assertEqual(logs[0].recipients,['to@example.com'])
 
     def test_log_suppressed_setting(self): 
         """Ensure log messages are not generated when settings forbid it"""

@@ -30,13 +30,13 @@ class AppSettings(object):
 
     @ClassProperty
     @classmethod
-    def EMAILTEMPLATES_LOG_BODY(cls):
+    def EMAILTEMPLATES_LOG_CONTENT(cls):
         """
-        When enabled, the body of the rendered email will be retained in the log.  If 
-        you enable this be sure that you are purging the logs regularly periodically to 
-        prevent excess data retention.
+        When enabled, the subject and body of the rendered email will be 
+        retained in the log.  If you enable this be sure that you are purging 
+        the logs regularly periodically to prevent excess data retention.
         """
-        return getattr(settings, 'EMAILTEMPLATES_LOG_BODY', False)
+        return getattr(settings, 'EMAILTEMPLATES_LOG_CONTENT', False)
 
     @ClassProperty
     @classmethod
