@@ -4,6 +4,7 @@ from django.contrib.sites.models import Site
 from django.contrib.contenttypes.models import ContentType
 from django.template import Context
 from django.core.exceptions import ValidationError
+from django.conf import settings
 
 from models import EmailMessageTemplate, Log
 from fields import validate_template_syntax
@@ -256,7 +257,6 @@ class TemplateSendingTest(TestCase):
         self.assertEqual(mail.outbox[0].cc, ['cc@example.com'])
         self.assertEqual(mail.outbox[0].bcc, ['bcc@example.com'])     
 
-    # Message logging
     def test_logged_email(self): 
         """Ensure log messages are generated correctly for sent emails"""
         template = EmailMessageTemplate.objects.get_template("Template 1")
@@ -271,7 +271,7 @@ class TemplateSendingTest(TestCase):
         logs = Log.objects.all()
         self.assertEqual(len(logs),1)
         self.assertEqual(logs[0].template.id,template.id)
-        self.assertEqual(logs[0].message,'')
+        self.assertEqual(logs[0].message,None)
         self.assertEqual(logs[0].status,Log.STATUS.SUCCESS)
         self.assertEqual(logs[0].recipients,['to@example.com', 'cc@example.com', 
                                              'bcc@example.com'])

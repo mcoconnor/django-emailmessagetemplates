@@ -178,7 +178,6 @@ class EmailMessageTemplate(models.Model, EmailMessage):
         """
         result = None
         send_error = None
-
         try:
             result = super(EmailMessageTemplate, self).send(fail_silently=False)
         except Exception as e:
@@ -186,7 +185,10 @@ class EmailMessageTemplate(models.Model, EmailMessage):
 
         #Log the results
         if AppSettings.EMAILTEMPLATES_LOG_EMAILS and not self.suppress_log:
-            message = "Sending email failed: " + send_error.message if send_error else ''
+            message = None
+            if send_error:
+                message = send_error.message if len(send_error.message) <= 100 else (send_error.message[:97] + '...')
+
             log = Log(template=self,
                       recipients=self.recipients(),
                       status=Log.STATUS.FAILURE if send_error else Log.STATUS.SUCCESS,
@@ -231,7 +233,7 @@ class Log(models.Model):
     template = models.ForeignKey(EmailMessageTemplate)
     recipients = SeparatedValuesField()
     status = models.CharField(max_length=1, choices=STATUS_CHOICES)
-    message = models.TextField()
+    message = models.CharField(max_length=100, null=True, blank=True)
     date = models.DateTimeField(auto_now_add=True)
 
     def __unicode__(self):
