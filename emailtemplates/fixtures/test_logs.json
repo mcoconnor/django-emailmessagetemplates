@@ -1,0 +1,50 @@
+[
+  {
+    "pk": 1, 
+    "model": "emailtemplates.log", 
+    "fields": {
+      "template": 1, 
+      "to": "to@example.com",
+      "cc": "cc@example.com",
+      "bcc": "bcc@example.com",
+      "from_email": "from@example.com",
+      "status": "S",
+      "message": null,
+      "subject": "hello world",
+      "body": "hi again",
+      "date": "2012-06-19T11:05:46.755"
+    }
+  }, 
+  {
+    "pk": 2, 
+    "model": "emailtemplates.log", 
+    "fields": {
+      "template": 2, 
+      "to": "to@example.com",
+      "cc": "cc@example.com",
+      "bcc": "bcc@example.com",
+      "from_email": "from@example.com",
+      "status": "F",
+      "message": null,
+      "subject": "hello world",
+      "body": "hi again",
+      "date": "2012-04-20T11:05:46.755"
+    }
+  }, 
+  {
+    "pk": 3, 
+    "model": "emailtemplates.log", 
+    "fields": {
+      "template": 1, 
+      "to": "to@example.com",
+      "cc": "cc@example.com",
+      "bcc": "bcc@example.com",
+      "from_email": "from@example.com",
+      "status": "S",
+      "message": null,
+      "subject": "hello world",
+      "body": "hi again",
+      "date": "2012-04-19T11:05:46.755"
+    }
+  }
+]

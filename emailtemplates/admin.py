@@ -16,7 +16,13 @@ class EmailMessageTemplateAdmin(admin.ModelAdmin):
 
     
 class LogAdmin(admin.ModelAdmin):
-    readonly_fields = ('template', 'recipients', 'status', 'message', 'date',)
+    readonly_fields = ('template', 'date', 'status', 'message', 'to', 'cc', 
+                       'bcc', 'from_email', 'subject', 'body',)
+    list_display= ('template', 'date', 'status', )
+    list_filter = ('template', 'status', )
+
+    def has_add_permission(self, request):
+        return False
 
 admin.site.register(EmailMessageTemplate, EmailMessageTemplateAdmin)
 admin.site.register(Log, LogAdmin)

@@ -1,3 +1,6 @@
+from datetime import datetime, timedelta
+
+from django.core.management import call_command
 from django.core import mail
 from django.test import TestCase
 from django.contrib.sites.models import Site
@@ -278,7 +281,7 @@ class TemplateSendingTest(TestCase):
         self.assertEqual(logs[0].to,['to@example.com'])
         self.assertEqual(logs[0].cc,['cc@example.com'])
         self.assertEqual(logs[0].bcc,['bcc@example.com'])
-        self.assertEqual(logs[0].from_email,['from@example.com'])
+        self.assertEqual(logs[0].from_email,'from@example.com')
 
     def test_logged_email_content(self): 
         """
@@ -383,7 +386,8 @@ class UtilityFunctionTest(TestCase):
 
     def test_mail_admins(self):
         """Ensure the mail_admins function works"""
-        with self.settings(ADMINS=(('a','admin1@example.com'),('b','admin2@example.com'))):
+        with self.settings(ADMINS=(('a','admin1@example.com'),
+                                   ('b','admin2@example.com'))):
             mail_admins("Template 1", context=self.context)
 
         # Test that one message has been sent.
@@ -397,7 +401,8 @@ class UtilityFunctionTest(TestCase):
 
     def test_mail_managers(self):
         """Ensure the mail_managers function works"""
-        with self.settings(MANAGERS=(('a','admin1@example.com'),('b','admin2@example.com'))):
+        with self.settings(MANAGERS=(('a','admin1@example.com'),
+                                     ('b','admin2@example.com'))):
             mail_managers("Template 1", context=self.context)
 
         # Test that one message has been sent.
@@ -409,8 +414,61 @@ class UtilityFunctionTest(TestCase):
         self.assertEqual(mail.outbox[0].to, ['admin1@example.com', 
                                              'admin2@example.com'])
 
+class PurgeLogsTest(TestCase):
+    """
+    Test the behavior of the purge_logs management commands 
+    """
+    fixtures = ['test_templates', 'test_logs',]
 
+    def setUp(self):
+        """Update the dates on the logs so that we can purge them predictably"""
+        super(TestCase, self).setUp()
 
+        logs = Log.objects.all().order_by('-date')
+        now = datetime.now()
+        days = [10,31,35]
 
-class ManagementCommandsTest(TestCase):
-    pass
+        for i in range(len(logs)):
+            logs[i].date = now - timedelta(days[i])
+            logs[i].save()
+        
+    def test_default_purge(self):
+        call_command('purge_logs', verbosity=0)
+        logs = Log.objects.all()
+
+        self.assertEqual(len(logs),1)
+        self.assertEqual(logs[0].id,1)
+
+    def test_retention_setting(self):
+        with self.settings(EMAILTEMPLATES_LOG_RETENTION_DAYS=33):
+            call_command('purge_logs', verbosity=0)
+        logs = Log.objects.all().order_by('-date')
+
+        self.assertEqual(len(logs),2)
+        self.assertEqual(logs[0].id,1)
+        self.assertEqual(logs[1].id,2)
+
+    def test_retention_argument(self):
+        call_command('purge_logs', verbosity=0, retention_days=33)
+        logs = Log.objects.all().order_by('-date')
+
+        self.assertEqual(len(logs),2)
+        self.assertEqual(logs[0].id,1)
+        self.assertEqual(logs[1].id,2)
+
+    def test_failures_retained(self):
+        with self.settings(EMAILTEMPLATES_PURGE_FAILED_MESSAGES=False):
+            call_command('purge_logs', verbosity=0)
+        logs = Log.objects.all().order_by('-date')
+
+        self.assertEqual(len(logs),2)
+        self.assertEqual(logs[0].id,1)
+        self.assertEqual(logs[1].id,2)
+
+    def test_force_failure_purge(self):
+        with self.settings(EMAILTEMPLATES_PURGE_FAILED_MESSAGES=False):
+            call_command('purge_logs', verbosity=0, force=True)
+        logs = Log.objects.all().order_by('-date')
+
+        self.assertEqual(len(logs),1)
+        self.assertEqual(logs[0].id,1)
