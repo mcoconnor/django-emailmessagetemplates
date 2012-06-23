@@ -275,8 +275,10 @@ class TemplateSendingTest(TestCase):
         self.assertEqual(logs[0].subject,None)
         self.assertEqual(logs[0].body,None)
         self.assertEqual(logs[0].status,Log.STATUS.SUCCESS)
-        self.assertEqual(logs[0].recipients,['to@example.com', 'cc@example.com', 
-                                             'bcc@example.com'])
+        self.assertEqual(logs[0].to,['to@example.com'])
+        self.assertEqual(logs[0].cc,['cc@example.com'])
+        self.assertEqual(logs[0].bcc,['bcc@example.com'])
+        self.assertEqual(logs[0].from_email,['from@example.com'])
 
     def test_logged_email_content(self): 
         """
@@ -296,7 +298,6 @@ class TemplateSendingTest(TestCase):
         self.assertEqual(logs[0].subject,"Test 1 Subject *HELLO*")
         self.assertEqual(logs[0].body,"Test 1 body *WORLD*")
         self.assertEqual(logs[0].status,Log.STATUS.SUCCESS)
-        self.assertEqual(logs[0].recipients,['to@example.com'])
 
     def test_log_suppressed_setting(self): 
         """Ensure log messages are not generated when settings forbid it"""

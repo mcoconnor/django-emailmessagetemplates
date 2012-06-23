@@ -190,7 +190,10 @@ class EmailMessageTemplate(models.Model, EmailMessage):
                 message = send_error.message if len(send_error.message) <= 100 else (send_error.message[:97] + '...')
 
             log = Log(template=self,
-                      recipients=self.recipients(),
+                      to=self.to,
+                      cc=self.cc,
+                      bcc=self.bcc,
+                      from_email=self.from_email,
                       status=Log.STATUS.FAILURE if send_error else Log.STATUS.SUCCESS,
                       message=message)
             if AppSettings.EMAILTEMPLATES_LOG_CONTENT:
@@ -235,7 +238,10 @@ class Log(models.Model):
                     )
 
     template = models.ForeignKey(EmailMessageTemplate)
-    recipients = SeparatedValuesField()
+    to = SeparatedValuesField()
+    cc = SeparatedValuesField()
+    bcc = SeparatedValuesField()
+    from_email = models.EmailField()
     status = models.CharField(max_length=1, choices=STATUS_CHOICES)
     message = models.CharField(max_length=100, null=True, blank=True)
     subject = models.CharField(max_length=2500, null=True, blank=True)
