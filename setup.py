@@ -14,6 +14,9 @@ setup(
     url='https://github.com/mcoconnor/django-emailtemplates',
     license='MIT',
     packages=['emailtemplates'],
+    install_requires=[
+        'django-appconf',
+    ],
     include_package_data=True,
     zip_safe=False,
     platforms=['any'],

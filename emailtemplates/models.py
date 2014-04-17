@@ -4,9 +4,8 @@ from django.template import Context, Template
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 
+from conf import settings
 from fields import SeparatedValuesField, validate_template_syntax
-from app_settings import AppSettings
-
 
 class EmailMessageTemplateManager(models.Manager):
 
@@ -24,7 +23,7 @@ class EmailMessageTemplateManager(models.Manager):
         else:
             object_id = None
             content_type = None
-
+        
         try:
             return self.get(name=name, object_id=object_id,
                             content_type=content_type, enabled=True)
@@ -50,14 +49,14 @@ class EmailMessageTemplate(models.Model, EmailMessage):
     #Fields to override from EmailMessage
     subject_template = models.CharField(max_length=2000, validators=[validate_template_syntax])
     body_template = models.TextField(validators=[validate_template_syntax])
-    sender = models.EmailField(max_length=75, blank=True, default='', verbose_name="'From' Email", help_text="The address this email should appear to be sent 'from'.  If blank, defaults to '{0}'.".format(AppSettings.EMAILTEMPLATES_DEFAULT_FROM_EMAIL))
+    sender = models.EmailField(max_length=75, blank=True, default='', verbose_name="'From' Email", help_text="The address this email should appear to be sent 'from'.  If blank, defaults to '{0}'.".format(settings.EMAILTEMPLATES_DEFAULT_FROM_EMAIL))
     base_cc = SeparatedValuesField(blank=True, default='', verbose_name="CC", help_text="An optional list of email addresses to be CCed when this template is sent (in addition to any addresses specified when the message is sent)")
     base_bcc = SeparatedValuesField(blank=True, default='', verbose_name="BCC", help_text="An optional list of email addresses to be BCCed when this template is sent (in addition to any addresses specified when the message is sent)")
 
     #Other information
     description = models.TextField()
     enabled = models.BooleanField(default=True, help_text="When unchecked, this email will not be sent.")
-    suppress_log = models.BooleanField(default=False, help_text="When checked, a log entry will not be generated when this email is sent, regardless of the EMAILTEMPLATES_LOG_EMAILS setting, which is currently '{0}'. Can be used for frequently sent, low value messages.".format(AppSettings.EMAILTEMPLATES_LOG_EMAILS))
+    suppress_log = models.BooleanField(default=False, help_text="When checked, a log entry will not be generated when this email is sent, regardless of the EMAILTEMPLATES_LOG_EMAILS setting, which is currently '{0}'. Can be used for frequently sent, low value messages.".format(settings.EMAILTEMPLATES_LOG_EMAILS))
     edited_date = models.DateTimeField(auto_now=True, editable=False, blank=True)
     edited_user = models.TextField(max_length=30, editable=False, blank=True)
 
@@ -120,7 +119,7 @@ class EmailMessageTemplate(models.Model, EmailMessage):
         sender, and finally the setting value.
         """
         return self._instance_from or self.sender or\
-            AppSettings.EMAILTEMPLATES_DEFAULT_FROM_EMAIL
+            settings.EMAILTEMPLATES_DEFAULT_FROM_EMAIL
 
     @from_email.setter
     def from_email(self, value):
@@ -184,7 +183,7 @@ class EmailMessageTemplate(models.Model, EmailMessage):
             send_error = e
 
         #Log the results
-        if AppSettings.EMAILTEMPLATES_LOG_EMAILS and not self.suppress_log:
+        if settings.EMAILTEMPLATES_LOG_EMAILS and not self.suppress_log:
             message = None
             if send_error:
                 message = send_error.message if len(send_error.message) <= 100 else (send_error.message[:97] + '...')
@@ -196,7 +195,7 @@ class EmailMessageTemplate(models.Model, EmailMessage):
                       from_email=self.from_email,
                       status=Log.STATUS.FAILURE if send_error else Log.STATUS.SUCCESS,
                       message=message)
-            if AppSettings.EMAILTEMPLATES_LOG_CONTENT:
+            if settings.EMAILTEMPLATES_LOG_CONTENT:
                 log.subject = self.subject
                 log.body = self.body
             log.save()

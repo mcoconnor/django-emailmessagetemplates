@@ -3,7 +3,7 @@ from datetime import timedelta, datetime
 
 from django.core.management.base import BaseCommand
 
-from emailtemplates.app_settings import AppSettings
+from emailtemplates.conf import settings
 from emailtemplates.models import Log
 
 class Command(BaseCommand):
@@ -28,14 +28,14 @@ class Command(BaseCommand):
         Clear out the logs prior to the specified time period
         """
         verbosity = int(options['verbosity'])
-        retain_days = options['retention_days'] if options['retention_days'] is not None else AppSettings.EMAILTEMPLATES_LOG_RETENTION_DAYS
+        retain_days = options['retention_days'] if options['retention_days'] is not None else settings.EMAILTEMPLATES_LOG_RETENTION_DAYS
         retention_threshold = datetime.now() - timedelta(retain_days)
 
         if verbosity > 0:
             print "Deleting log entries prior to", retention_threshold
         logs = Log.objects.filter(date__lt=retention_threshold)
 
-        if not (AppSettings.EMAILTEMPLATES_PURGE_FAILED_MESSAGES or options['force']):
+        if not (settings.EMAILTEMPLATES_PURGE_FAILED_MESSAGES or options['force']):
             if verbosity > 1:
                 print "Retaining failed message logs."
             logs = logs.exclude(status=Log.STATUS.FAILURE)
