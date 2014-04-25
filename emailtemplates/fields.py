@@ -1,9 +1,11 @@
+from django.conf import settings
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.template import Context, Template, TemplateSyntaxError
 
-from south.modelsinspector import add_introspection_rules
-add_introspection_rules([], ["^emailtemplates\.fields\.SeparatedValuesField"])
+if 'south' in settings.INSTALLED_APPS:
+    from south.modelsinspector import add_introspection_rules
+    add_introspection_rules([], ["^emailtemplates\.fields\.SeparatedValuesField"])
 
 class SeparatedValuesField(models.TextField):
     """
