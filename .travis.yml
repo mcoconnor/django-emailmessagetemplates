@@ -1,0 +1,21 @@
+# Python releases to test
+language: python
+python:
+  - 2.6
+  - 2.7
+  
+# Django releases
+env:
+  - DJANGO_VERSION=Django==1.4.11
+  - DJANGO_VERSION=Django==1.5.6
+  - DJANGO_VERSION=Django==1.5.3
+  
+# Package installation
+install:
+  - pip install argparse --use-mirrors
+  - pip install -r requirements.txt --use-mirrors 
+  - pip install $DJANGO_VERSION --use-mirrors
+  - python setup.py install
+  
+# Run the tests
+script: python quicktest.py emailtemplates
