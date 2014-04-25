@@ -1,6 +1,6 @@
  Django Email Templates
 =======================
-&copy; 2012 Michael O'Connor, http://www.mcoconnor.net
+&copy; 2014 Michael O'Connor, http://www.mcoconnor.net
 https://github.com/mcoconnor/django-emailtemplates
 
 In many cases, users will want to be able to edit the emails sent by your application without having to go to developers to change hard-coded email content.  This package provides a Django app that allows users to edit email content and review email logs with an easy-to-integrate developer API.
@@ -23,7 +23,7 @@ Email templates support the same attributes that `EmailMessage`s do, including `
 
 Convenience Functions
 ---------------------
-The email convenience functions provided by Django replicated for message templates.  These include `send_mail`, `send_mass_mail`, `mail_admins`, 'mail_managers` and are used similarly:
+The email convenience functions provided by Django replicated for message templates.  These include `send_mail`, `send_mass_mail`, `mail_admins`, `mail_managers` and are used similarly:
 
 
     send_mail(name, related_object=None, context={}, from_email=None,
@@ -51,6 +51,7 @@ While `EmailMessageTemplate` behaves like Django's `EmailMessage` in many ways, 
 Settings
 --------
 **`EMAILTEMPLATES_DEFAULT_FROM_EMAIL`**
+
 Default: The `DEFAULT_FROM_EMAIL` value from your project's settings.
 
 The default email address to use for message sent from templates.  This is can be overridden on a per-template basis by setting the `sender` field on the template model instance.  It can be overridden on a per-email basis by setting the `from_email` attribute on an instantiated `EmailMessageTemaple` object or using the `from_email` argument to any of the convenience functions.
