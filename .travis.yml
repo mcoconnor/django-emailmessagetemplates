@@ -1,24 +1,24 @@
 # Python releases to test
 language: python
 python:
-  - 2.5
-  - 2.6
-  - 2.7
+  - "2.5"
+  - "2.6"
+  - "2.7"
   
 # Django releases
 env:
-  - DJANGO_VERSION=django>=1.4,>1.5
-  - DJANGO_VERSION=django>=1.5,>1.6
-  - DJANGO_VERSION=django>=1.6,>1.7
+  - DJANGO_VERSION="django>=1.4,<1.5"
+  - DJANGO_VERSION="django>=1.5,<1.6"
+  - DJANGO_VERSION="django>=1.6,<1.7"
   
 matrix:
   exclude:
     - python: "2.5"
-      env: DJANGO_VERSION="django>=1.5,>1.6"
+      env: DJANGO_VERSION="django>=1.5,<1.6"
     - python: "2.5"
-      env: DJANGO_VERSION="django>=1.6,>1.7"
+      env: DJANGO_VERSION="django>=1.6,<1.7"
     - python: "2.6"
-      env: DJANGO_VERSION="django>=1.6,>1.7"
+      env: DJANGO_VERSION="django>=1.6,<1.7"
   
 # Package installation
 install:
