@@ -5,9 +5,16 @@ https://github.com/mcoconnor/django-emailtemplates
 
 In many cases, users will want to be able to edit the emails sent by your application without having to go to developers to change hard-coded email content.  This package provides a Django app that allows users to edit email content and review email logs with an easy-to-integrate developer API.
 
+Requirements
+------------
+Django Email Templates supports versions 1.4-1.6 of Django under Python 2.6 and 2.7.
+[![Build Status](https://travis-ci.org/mcoconnor/django-emailtemplates.svg?branch=master)](https://travis-ci.org/mcoconnor/django-emailtemplates)  
+
+[django-appconf](https://pypi.python.org/pypi/django-appconf/0.6) is the only external dependency.  [South](http://south.aeracode.org/) is supported but not required.
+
 Installation
 ------------
-Django Email Templates is a standard Django app.  To add it to a project, just include `'emailtemplates'` in the `INSTALLED_APPS` section of your `settings.py` file. 
+Django Email Templates is a standard Django app.  To add it to a project, just include `'emailtemplates'` in the `INSTALLED_APPS` section of your `settings.py` file.
 
 Usage
 -----
