@@ -273,9 +273,7 @@ class TemplateValidatorTest(TestCase):
 
     def test_invalid_template(self):
         """Ensure template validator rejects invalid templates"""
-        self.assertRaisesMessage(ValidationError,
-            "Invalid Template Syntax: Unclosed tag 'if'. Looking for one of: "
-            "elif, else, endif ", 
+        self.assertRaises(ValidationError, 
             validate_template_syntax, 
             "hello {% if world %} world")
 

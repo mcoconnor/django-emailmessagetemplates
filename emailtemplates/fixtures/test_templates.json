@@ -1,126 +1,132 @@
 [
-  {
-    "pk": 1, 
-    "model": "sites.site", 
-    "fields": {
-      "domain": "test1.com", 
-      "name": "Test Site 1"
-    }
-  }, 
-  {
-    "pk": 2, 
-    "model": "sites.site", 
-    "fields": {
-      "domain": "test2.com", 
-      "name": "Test Site 2"
-    }
-  }, 
-  {
-    "pk": 1, 
-    "model": "emailtemplates.emailmessagetemplate", 
-    "fields": {
-      "edited_user": "", 
-      "base_cc": null, 
-      "sender": "", 
-      "body_template": "Test 1 body {{world}}", 
-      "description": "", 
-      "enabled": true, 
-      "object_id": null, 
-      "edited_date": "2012-05-19T11:05:46.755", 
-      "content_type": null, 
-      "subject_template": "Test 1 Subject {{hello}}", 
-      "base_bcc": null, 
-      "name": "Template 1"
-    }
-  }, 
-  {
-    "pk": 4, 
-    "model": "emailtemplates.emailmessagetemplate", 
-    "fields": {
-      "edited_user": "", 
-      "base_cc": null, 
-      "sender": "", 
-      "body_template": "Test 1 (with related object) Body {{world}}", 
-      "description": "", 
-      "enabled": true, 
-      "object_id": 1, 
-      "edited_date": "2012-05-19T11:05:53.779", 
-      "content_type": 2, 
-      "subject_template": "Test 1 (with related object) Subject {{hello}}", 
-      "base_bcc": null, 
-      "name": "Template 1"
-    }
-  }, 
-  {
-    "pk": 2, 
-    "model": "emailtemplates.emailmessagetemplate", 
-    "fields": {
-      "edited_user": "", 
-      "base_cc": "a@example.com,b@example.com", 
-      "sender": "example@example.com", 
-      "body_template": "Test 2 body {{world}}", 
-      "description": "", 
-      "enabled": true, 
-      "object_id": null, 
-      "edited_date": "2012-05-19T11:06:01.208", 
-      "content_type": null, 
-      "subject_template": "Test 2 Subject {{hello}}", 
-      "base_bcc": "c@example.com,d@example.com", 
-      "name": "Template 2"
-    }
-  }, 
-  {
-    "pk": 5, 
-    "model": "emailtemplates.emailmessagetemplate", 
-    "fields": {
-      "edited_user": "", 
-      "base_cc": null, 
-      "sender": "", 
-      "body_template": "Test 2 Subject {{world}}", 
-      "description": "", 
-      "enabled": false, 
-      "object_id": 2, 
-      "edited_date": "2012-05-19T11:06:08.031", 
-      "content_type": 2, 
-      "subject_template": "Test 2 Subject {{hello}}", 
-      "base_bcc": null, 
-      "name": "Template 2"
-    }
-  }, 
-  {
-    "pk": 3, 
-    "model": "emailtemplates.emailmessagetemplate", 
-    "fields": {
-      "edited_user": "", 
-      "base_cc": null, 
-      "sender": "", 
-      "body_template": "Test 3 body {{world}}", 
-      "description": "", 
-      "enabled": false, 
-      "object_id": null, 
-      "edited_date": "2012-05-19T11:05:39.781", 
-      "content_type": null, 
-      "subject_template": "Test 3 subject {{hello}}", 
-      "base_bcc": null, 
-      "name": "Template 3"
-    }
-  },
-  {
-    "pk": 6, 
-    "model": "emailtemplates.emailmessagetemplate", 
-    "fields": {
-      "edited_user": "", 
-      "base_cc": null, 
-      "sender": "", 
-      "body_template": "Test 4 body {{world}}", 
-      "description": "", 
-      "enabled": true, 
-      "object_id": null, 
-      "edited_date": "2012-05-19T11:05:39.781", 
-      "content_type": null, 
-      "subject_template": "Test 4 subject {{hello}}", 
-      "base_bcc": null, 
-      "name": "Template 4"
-    }
+{
+  "pk": 1, 
+  "model": "sites.site", 
+  "fields": {
+    "domain": "test1.com", 
+    "name": "Test Site 1"
   }
+},
+{
+  "pk": 2, 
+  "model": "sites.site", 
+  "fields": {
+    "domain": "test2.com", 
+    "name": "Test Site 2"
+  }
+},
+{
+  "pk": 1, 
+  "model": "emailtemplates.emailmessagetemplate", 
+  "fields": {
+    "edited_user": "", 
+    "base_cc": null, 
+    "sender": "", 
+    "body_template": "Test 1 body {{world}}", 
+    "description": "", 
+    "enabled": true, 
+    "object_id": null, 
+    "edited_date": "2012-05-19T11:05:46.755Z", 
+    "content_type": null, 
+    "subject_template": "Test 1 Subject {{hello}}", 
+    "base_bcc": null, 
+    "name": "Template 1"
+  }
+},
+{
+  "pk": 2, 
+  "model": "emailtemplates.emailmessagetemplate", 
+  "fields": {
+    "edited_user": "", 
+    "base_cc": "a@example.com,b@example.com", 
+    "sender": "example@example.com", 
+    "body_template": "Test 2 body {{world}}", 
+    "description": "", 
+    "enabled": true, 
+    "object_id": null, 
+    "edited_date": "2012-05-19T11:06:01.208Z", 
+    "content_type": null, 
+    "subject_template": "Test 2 Subject {{hello}}", 
+    "base_bcc": "c@example.com,d@example.com", 
+    "name": "Template 2"
+  }
+},
+{
+  "pk": 3, 
+  "model": "emailtemplates.emailmessagetemplate", 
+  "fields": {
+    "edited_user": "", 
+    "base_cc": null, 
+    "sender": "", 
+    "body_template": "Test 3 body {{world}}", 
+    "description": "", 
+    "enabled": false, 
+    "object_id": null, 
+    "edited_date": "2012-05-19T11:05:39.781Z", 
+    "content_type": null, 
+    "subject_template": "Test 3 subject {{hello}}", 
+    "base_bcc": null, 
+    "name": "Template 3"
+  }
+},
+{
+  "pk": 4, 
+  "model": "emailtemplates.emailmessagetemplate", 
+  "fields": {
+    "edited_user": "", 
+    "base_cc": null, 
+    "sender": "", 
+    "body_template": "Test 1 (with related object) Body {{world}}", 
+    "description": "", 
+    "enabled": true, 
+    "object_id": 1, 
+    "edited_date": "2012-05-19T11:05:53.779Z", 
+    "content_type": [
+      "sites", 
+      "site"
+    ], 
+    "subject_template": "Test 1 (with related object) Subject {{hello}}", 
+    "base_bcc": null, 
+    "name": "Template 1"
+  }
+},
+{
+  "pk": 5, 
+  "model": "emailtemplates.emailmessagetemplate", 
+  "fields": {
+    "edited_user": "", 
+    "base_cc": null, 
+    "sender": "", 
+    "body_template": "Test 2 Subject {{world}}", 
+    "description": "", 
+    "enabled": false, 
+    "object_id": 2, 
+    "edited_date": "2012-05-19T11:06:08.031Z", 
+    "content_type": [
+      "sites", 
+      "site"
+    ], 
+    "subject_template": "Test 2 Subject {{hello}}", 
+    "base_bcc": null, 
+    "name": "Template 2"
+  }
+},
+{
+  "pk": 6, 
+  "model": "emailtemplates.emailmessagetemplate", 
+  "fields": {
+    "edited_user": "", 
+    "base_cc": null, 
+    "sender": "", 
+    "body_template": "Test 4 body {{world}}", 
+    "description": "", 
+    "enabled": true, 
+    "object_id": null, 
+    "edited_date": "2012-05-19T11:05:39.781Z", 
+    "content_type": null, 
+    "subject_template": "Test 4 subject {{hello}}", 
+    "base_bcc": null, 
+    "name": "Template 4"
+  }
+}
 ]
