@@ -9,7 +9,7 @@ from django.template import Context
 from django.core.exceptions import ValidationError
 from django.conf import settings
 
-from models import EmailMessageTemplate, Log
+from models import EmailMessageTemplate
 from fields import validate_template_syntax
 from utils import send_mail, send_mass_mail, mail_admins, mail_managers
 
@@ -231,8 +231,7 @@ class TemplatePreparationTest(TestCase):
 
 class TemplateSendingTest(TestCase):
     """
-    Ensure that the emails are actually composed and sent successfully and that 
-    logs are generated (or not) when appropriate
+    Ensure that the emails are actually composed and sent successfully
     """
     fixtures = ['test_templates',]
     context = {'hello': '*HELLO*', 'world': '*WORLD*'}
@@ -260,68 +259,6 @@ class TemplateSendingTest(TestCase):
         self.assertEqual(mail.outbox[0].cc, ['cc@example.com'])
         self.assertEqual(mail.outbox[0].bcc, ['bcc@example.com'])     
 
-    def test_logged_email(self): 
-        """Ensure log messages are generated correctly for sent emails"""
-        template = EmailMessageTemplate.objects.get_template("Template 1")
-        template.context=self.context
-        template.from_email='from@example.com'
-        template.to=['to@example.com']
-        template.cc=['cc@example.com']
-        template.bcc=['bcc@example.com']
-        template.subject_prefix='[PREFIX] '
-        template.send()
-        
-        logs = Log.objects.all()
-        self.assertEqual(len(logs),1)
-        self.assertEqual(logs[0].template.id,template.id)
-        self.assertEqual(logs[0].message,None)
-        self.assertEqual(logs[0].subject,None)
-        self.assertEqual(logs[0].body,None)
-        self.assertEqual(logs[0].status,Log.STATUS.SUCCESS)
-        self.assertEqual(logs[0].to,['to@example.com'])
-        self.assertEqual(logs[0].cc,['cc@example.com'])
-        self.assertEqual(logs[0].bcc,['bcc@example.com'])
-        self.assertEqual(logs[0].from_email,'from@example.com')
-
-    def test_logged_email_content(self): 
-        """
-        Ensure log messages are generated correctly for sent emails including 
-        logged content
-        """
-        with self.settings(EMAILTEMPLATES_LOG_CONTENT=True):
-            template = EmailMessageTemplate.objects.get_template("Template 1")
-            template.context=self.context
-            template.to=['to@example.com']
-            template.send()
-        
-        logs = Log.objects.all()
-        self.assertEqual(len(logs),1)
-        self.assertEqual(logs[0].template.id,template.id)
-        self.assertEqual(logs[0].message,None)
-        self.assertEqual(logs[0].subject,"Test 1 Subject *HELLO*")
-        self.assertEqual(logs[0].body,"Test 1 body *WORLD*")
-        self.assertEqual(logs[0].status,Log.STATUS.SUCCESS)
-
-    def test_log_suppressed_setting(self): 
-        """Ensure log messages are not generated when settings forbid it"""
-        with self.settings(EMAILTEMPLATES_LOG_EMAILS=False):
-            template = EmailMessageTemplate.objects.get_template("Template 1")
-            template.context=self.context
-            template.to=['to@example.com']
-            template.send()
-        
-            logs = Log.objects.all()
-            self.assertEqual(len(logs),0)
-
-    def test_log_suppressed_template(self): 
-        """Ensure log messages are not generated when templates forbid it"""
-        template = EmailMessageTemplate.objects.get_template("Template 4")
-        template.context=self.context
-        template.to=['to@example.com']
-        template.send()
-        
-        logs = Log.objects.all()
-        self.assertEqual(len(logs),0)
 
 class TemplateValidatorTest(TestCase):
     """
@@ -413,62 +350,3 @@ class UtilityFunctionTest(TestCase):
         self.assertEqual(mail.outbox[0].body, "Test 1 body *WORLD*")
         self.assertEqual(mail.outbox[0].to, ['admin1@example.com', 
                                              'admin2@example.com'])
-
-class PurgeLogsTest(TestCase):
-    """
-    Test the behavior of the purge_logs management commands 
-    """
-    fixtures = ['test_templates', 'test_logs',]
-
-    def setUp(self):
-        """Update the dates on the logs so that we can purge them predictably"""
-        super(TestCase, self).setUp()
-
-        logs = Log.objects.all().order_by('-date')
-        now = datetime.now()
-        days = [10,31,35]
-
-        for i in range(len(logs)):
-            logs[i].date = now - timedelta(days[i])
-            logs[i].save()
-        
-    def test_default_purge(self):
-        call_command('purge_logs', verbosity=0)
-        logs = Log.objects.all()
-
-        self.assertEqual(len(logs),1)
-        self.assertEqual(logs[0].id,1)
-
-    def test_retention_setting(self):
-        with self.settings(EMAILTEMPLATES_LOG_RETENTION_DAYS=33):
-            call_command('purge_logs', verbosity=0)
-        logs = Log.objects.all().order_by('-date')
-
-        self.assertEqual(len(logs),2)
-        self.assertEqual(logs[0].id,1)
-        self.assertEqual(logs[1].id,2)
-
-    def test_retention_argument(self):
-        call_command('purge_logs', verbosity=0, retention_days=33)
-        logs = Log.objects.all().order_by('-date')
-
-        self.assertEqual(len(logs),2)
-        self.assertEqual(logs[0].id,1)
-        self.assertEqual(logs[1].id,2)
-
-    def test_failures_retained(self):
-        with self.settings(EMAILTEMPLATES_PURGE_FAILED_MESSAGES=False):
-            call_command('purge_logs', verbosity=0)
-        logs = Log.objects.all().order_by('-date')
-
-        self.assertEqual(len(logs),2)
-        self.assertEqual(logs[0].id,1)
-        self.assertEqual(logs[1].id,2)
-
-    def test_force_failure_purge(self):
-        with self.settings(EMAILTEMPLATES_PURGE_FAILED_MESSAGES=False):
-            call_command('purge_logs', verbosity=0, force=True)
-        logs = Log.objects.all().order_by('-date')
-
-        self.assertEqual(len(logs),1)
-        self.assertEqual(logs[0].id,1)

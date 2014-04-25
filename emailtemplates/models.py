@@ -56,7 +56,6 @@ class EmailMessageTemplate(models.Model, EmailMessage):
     #Other information
     description = models.TextField()
     enabled = models.BooleanField(default=True, help_text="When unchecked, this email will not be sent.")
-    suppress_log = models.BooleanField(default=False, help_text="When checked, a log entry will not be generated when this email is sent, regardless of the EMAILTEMPLATES_LOG_EMAILS setting, which is currently '{0}'. Can be used for frequently sent, low value messages.".format(settings.EMAILTEMPLATES_LOG_EMAILS))
     edited_date = models.DateTimeField(auto_now=True, editable=False, blank=True)
     edited_user = models.TextField(max_length=30, editable=False, blank=True)
 
@@ -119,7 +118,8 @@ class EmailMessageTemplate(models.Model, EmailMessage):
         sender, and finally the setting value.
         """
         return self._instance_from or self.sender or\
-            settings.EMAILTEMPLATES_DEFAULT_FROM_EMAIL
+            settings.EMAILTEMPLATES_DEFAULT_FROM_EMAIL or\
+            settings.DEFAULT_FROM_EMAIL
 
     @from_email.setter
     def from_email(self, value):
@@ -182,24 +182,6 @@ class EmailMessageTemplate(models.Model, EmailMessage):
         except Exception as e:
             send_error = e
 
-        #Log the results
-        if settings.EMAILTEMPLATES_LOG_EMAILS and not self.suppress_log:
-            message = None
-            if send_error:
-                message = send_error.message if len(send_error.message) <= 100 else (send_error.message[:97] + '...')
-
-            log = Log(template=self,
-                      to=self.to,
-                      cc=self.cc,
-                      bcc=self.bcc,
-                      from_email=self.from_email,
-                      status=Log.STATUS.FAILURE if send_error else Log.STATUS.SUCCESS,
-                      message=message)
-            if settings.EMAILTEMPLATES_LOG_CONTENT:
-                log.subject = self.subject
-                log.body = self.body
-            log.save()
-
         #Raise an exception if the user has requested it
         if not fail_silently and send_error:
             raise send_error
@@ -209,7 +191,7 @@ class EmailMessageTemplate(models.Model, EmailMessage):
     def __init__(self,*args,**kwargs):
         """
         Initialize the template, ensuring that the from_email is not set 
-        unnecessarly
+        unnecessarily
         """
         super(EmailMessageTemplate, self).__init__(*args,**kwargs)
         #resetting sender to default so EmailMessage won't stomp on it
@@ -220,32 +202,3 @@ class EmailMessageTemplate(models.Model, EmailMessage):
         ordering = ('name',)
         unique_together = (("name", "content_type", "object_id"),)
         verbose_name = "Email Template"
-
-
-class Log(models.Model):
-    """
-    The record of one attempt to send a templated email message.
-    """
-
-    class STATUS:
-        SUCCESS = 'S'
-        FAILURE = 'F'
-
-    STATUS_CHOICES = (
-                        (STATUS.SUCCESS, 'SUCCESS. Message sent.',),
-                        (STATUS.FAILURE, 'FAILURE. Message not sent due to errors.',),
-                    )
-
-    template = models.ForeignKey(EmailMessageTemplate)
-    to = SeparatedValuesField()
-    cc = SeparatedValuesField()
-    bcc = SeparatedValuesField()
-    from_email = models.EmailField()
-    status = models.CharField(max_length=1, choices=STATUS_CHOICES)
-    message = models.CharField(max_length=100, null=True, blank=True)
-    subject = models.CharField(max_length=2500, null=True, blank=True)
-    body = models.TextField(null=True, blank=True)
-    date = models.DateTimeField(auto_now_add=True)
-
-    def __unicode__(self):
-        return "  {0} '{1}' at {2}.".format(self.get_status_display(), self.template, self.date,)
