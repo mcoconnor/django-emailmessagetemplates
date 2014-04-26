@@ -1,1 +1,2 @@
 django-appconf
+html2text

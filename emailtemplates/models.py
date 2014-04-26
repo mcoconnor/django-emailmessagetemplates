@@ -170,6 +170,12 @@ class EmailMessageTemplate(models.Model, EmailMultiAlternatives):
 
     @property
     def body(self):
+        if self.is_html_message and self.autogenerate_text:
+            try:
+                import html2text
+                return html2text.html2text(self.html_content())
+            except ImportError:
+                pass
         return Template(self.body_template).render(self.context)
 
     @body.setter
@@ -178,6 +184,19 @@ class EmailMessageTemplate(models.Model, EmailMultiAlternatives):
         No-op to prevent EmailMessage from stomping on the template 
         """
         pass
+    
+    def html_content(self):
+        """
+        Render the HTML message content, if any
+        """
+        if self.is_html_message():
+            return Template(self.body_template_html).render(self.context)
+        return None
+    
+    def is_html_message(self):
+        return settings.EMAILTEMPLATES_ALLOW_HTML_MESSAGES \
+            and self.type == 'text/html'
+        
                         
     def send(self, fail_silently=False):
         """
@@ -186,6 +205,9 @@ class EmailMessageTemplate(models.Model, EmailMultiAlternatives):
         result = None
         send_error = None
         try:
+            html_content = self.html_content()
+            if html_content is not None:
+                self.attach_alternative(html_content, "text/html")
             result = super(EmailMessageTemplate, self).send(fail_silently=False)
         except Exception as e:
             send_error = e

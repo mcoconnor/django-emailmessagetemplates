@@ -17,6 +17,9 @@ setup(
     install_requires=[
         'django-appconf',
     ],
+    extras_require = {
+        'text_autogen':  ["html2text"],
+    },
     include_package_data=True,
     zip_safe=False,
     platforms=['any'],
