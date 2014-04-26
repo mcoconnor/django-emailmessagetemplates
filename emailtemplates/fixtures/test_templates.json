@@ -21,16 +21,19 @@
   "fields": {
     "edited_user": "", 
     "base_cc": null, 
-    "sender": "", 
+    "name": "Template 1", 
     "body_template": "Test 1 body {{world}}", 
     "description": "", 
     "enabled": true, 
     "object_id": null, 
     "edited_date": "2012-05-19T11:05:46.755Z", 
+    "autogenerate_text": false, 
+    "body_template_html": "", 
     "content_type": null, 
     "subject_template": "Test 1 Subject {{hello}}", 
+    "type": "text/plain", 
     "base_bcc": null, 
-    "name": "Template 1"
+    "sender": ""
   }
 },
 {
@@ -39,16 +42,19 @@
   "fields": {
     "edited_user": "", 
     "base_cc": "a@example.com,b@example.com", 
-    "sender": "example@example.com", 
+    "name": "Template 2", 
     "body_template": "Test 2 body {{world}}", 
     "description": "", 
     "enabled": true, 
     "object_id": null, 
     "edited_date": "2012-05-19T11:06:01.208Z", 
+    "autogenerate_text": false, 
+    "body_template_html": "", 
     "content_type": null, 
     "subject_template": "Test 2 Subject {{hello}}", 
+    "type": "text/plain", 
     "base_bcc": "c@example.com,d@example.com", 
-    "name": "Template 2"
+    "sender": "example@example.com"
   }
 },
 {
@@ -57,16 +63,19 @@
   "fields": {
     "edited_user": "", 
     "base_cc": null, 
-    "sender": "", 
+    "name": "Template 3", 
     "body_template": "Test 3 body {{world}}", 
     "description": "", 
     "enabled": false, 
     "object_id": null, 
     "edited_date": "2012-05-19T11:05:39.781Z", 
+    "autogenerate_text": false, 
+    "body_template_html": "", 
     "content_type": null, 
     "subject_template": "Test 3 subject {{hello}}", 
+    "type": "text/plain", 
     "base_bcc": null, 
-    "name": "Template 3"
+    "sender": ""
   }
 },
 {
@@ -75,19 +84,22 @@
   "fields": {
     "edited_user": "", 
     "base_cc": null, 
-    "sender": "", 
+    "name": "Template 1", 
     "body_template": "Test 1 (with related object) Body {{world}}", 
     "description": "", 
     "enabled": true, 
     "object_id": 1, 
     "edited_date": "2012-05-19T11:05:53.779Z", 
+    "autogenerate_text": false, 
+    "body_template_html": "", 
     "content_type": [
       "sites", 
       "site"
     ], 
     "subject_template": "Test 1 (with related object) Subject {{hello}}", 
+    "type": "text/plain", 
     "base_bcc": null, 
-    "name": "Template 1"
+    "sender": ""
   }
 },
 {
@@ -96,19 +108,22 @@
   "fields": {
     "edited_user": "", 
     "base_cc": null, 
-    "sender": "", 
+    "name": "Template 2", 
     "body_template": "Test 2 Subject {{world}}", 
     "description": "", 
     "enabled": false, 
     "object_id": 2, 
     "edited_date": "2012-05-19T11:06:08.031Z", 
+    "autogenerate_text": false, 
+    "body_template_html": "", 
     "content_type": [
       "sites", 
       "site"
     ], 
     "subject_template": "Test 2 Subject {{hello}}", 
+    "type": "text/plain", 
     "base_bcc": null, 
-    "name": "Template 2"
+    "sender": ""
   }
 },
 {
@@ -117,16 +132,19 @@
   "fields": {
     "edited_user": "", 
     "base_cc": null, 
-    "sender": "", 
+    "name": "Template 4", 
     "body_template": "Test 4 body {{world}}", 
     "description": "", 
     "enabled": true, 
     "object_id": null, 
     "edited_date": "2012-05-19T11:05:39.781Z", 
+    "autogenerate_text": false, 
+    "body_template_html": "", 
     "content_type": null, 
     "subject_template": "Test 4 subject {{hello}}", 
+    "type": "text/plain", 
     "base_bcc": null, 
-    "name": "Template 4"
+    "sender": ""
   }
 }
 ]
