@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib import admin
 from django import forms
 
@@ -6,7 +7,13 @@ from forms import EmailListField
 
 
 class EmailMessageTemplateAdmin(admin.ModelAdmin):
-    readonly_fields = ('description', 'content_type', 'object_id',)
+    readonly_fields = ('related_item_display',)
+    
+    def __init__(self, *args, **kwargs):
+        super(EmailMessageTemplateAdmin, self).__init__(*args, **kwargs)
+        self.exclude = ['replated_object_type', 'related_object_id']
+        if not settings.EMAILTEMPLATES_ALLOW_HTML_MESSAGES:
+            self.exclude.extend(['type','autogenerate_text','body_template_html']) 
 
     def formfield_for_dbfield(self, db_field, **kwargs):
         if db_field.name in ['base_cc', 'base_bcc',]:
