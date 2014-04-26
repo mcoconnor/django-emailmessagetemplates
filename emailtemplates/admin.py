@@ -11,7 +11,7 @@ class EmailMessageTemplateAdmin(admin.ModelAdmin):
     
     def __init__(self, *args, **kwargs):
         super(EmailMessageTemplateAdmin, self).__init__(*args, **kwargs)
-        self.exclude = ['replated_object_type', 'related_object_id']
+        self.exclude = ['content_type', 'object_id']
         if not settings.EMAILTEMPLATES_ALLOW_HTML_MESSAGES:
             self.exclude.extend(['type','autogenerate_text','body_template_html']) 
 
@@ -20,5 +20,10 @@ class EmailMessageTemplateAdmin(admin.ModelAdmin):
             request = kwargs.pop("request", None)
             return db_field.formfield(form_class=EmailListField, **kwargs)
         return super(EmailMessageTemplateAdmin, self).formfield_for_dbfield(db_field, **kwargs)
+    
+    class Media:
+        js = (
+            'emailtemplates/js/admin.js',
+            )
     
 admin.site.register(EmailMessageTemplate, EmailMessageTemplateAdmin)
