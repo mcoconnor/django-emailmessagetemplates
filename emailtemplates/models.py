@@ -168,7 +168,7 @@ class EmailMessageTemplate(models.Model, EmailMultiAlternatives):
 
     @property
     def body(self):
-        if self.is_html_message and self.autogenerate_text:
+        if self.is_html_message() and self.autogenerate_text:
             try:
                 import html2text
                 return html2text.html2text(self.html_content())
@@ -208,6 +208,7 @@ class EmailMessageTemplate(models.Model, EmailMultiAlternatives):
                 self.attach_alternative(html_content, "text/html")
             result = super(EmailMessageTemplate, self).send(fail_silently=False)
         except Exception as e:
+            raise
             send_error = e
 
         #Raise an exception if the user has requested it
