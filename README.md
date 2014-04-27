@@ -32,6 +32,10 @@ The central piece of functionality in this app is the EmailMessageTemplate class
     
 Email templates support the same attributes that `EmailMultiAlternatives`s do, including `to`, `cc`, `bcc`, `from_email`, `headers`, and `attachments`.
 
+HTML/Multipart Messages
+-----------------------
+Django Email Templates can either send plain text emails or HTML formatted messages with plain-text alternative content.  To enable HTML emails, the `EMAILTEMPLATES_ALLOW_HTML_MESSAGES` setting must be set to `True`, and the `type` field on the `EmailMessageTemplate` instance must be set to 'HTML'.  Plain text alternative can either be auto-generated from the rendered HTML body content (via the HTML2Text library, which converts the message to Markdown) or by manually maintaining a separate plain text body template.
+
 Convenience Functions
 ---------------------
 The email convenience functions provided by Django replicated for message templates.  These include `send_mail`, `send_mass_mail`, `mail_admins`, `mail_managers` and are used similarly:
@@ -66,3 +70,10 @@ Settings
 Default: The `DEFAULT_FROM_EMAIL` value from your project's settings.
 
 The default email address to use for message sent from templates.  This is can be overridden on a per-template basis by setting the `sender` field on the template model instance.  It can be overridden on a per-email basis by setting the `from_email` attribute on an instantiated `EmailMessageTemaple` object or using the `from_email` argument to any of the convenience functions.
+
+
+**`EMAILTEMPLATES_ALLOW_HTML_MESSAGES`**
+
+Default: False
+
+If true, templates can produce HTML-formatted messages and provide plain-text alternative content.  Enabling this option will display additional fields in the Django admin form and will enable HTML generation for templates that have a `type` of `text/html`. 
