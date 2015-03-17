@@ -17,6 +17,8 @@ matrix:
     - python: "2.6"
       env: DJANGO_VERSION="django>=1.6,<1.7"
     - python: "2.6"
+      env: DJANGO_VERSION="django>=1.7,<1.8"
+    - python: "2.6"
       env: DJANGO_VERSION="django==1.8b2"
         
 # Package installation
