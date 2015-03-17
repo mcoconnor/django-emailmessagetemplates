@@ -1,67 +1,46 @@
 # -*- coding: utf-8 -*-
-from south.utils import datetime_utils as datetime
-from south.db import db
-from south.v2 import SchemaMigration
-from django.db import models
+from __future__ import unicode_literals
+
+from django.db import models, migrations
+import emailtemplates.fields
+import django.core.mail.message
 
 
-class Migration(SchemaMigration):
+class Migration(migrations.Migration):
 
-    def forwards(self, orm):
-        # Adding model 'EmailMessageTemplate'
-        db.create_table(u'emailtemplates_emailmessagetemplate', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=50)),
-            ('content_type', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['contenttypes.ContentType'], null=True, blank=True)),
-            ('object_id', self.gf('django.db.models.fields.PositiveIntegerField')(null=True, blank=True)),
-            ('subject_template', self.gf('django.db.models.fields.CharField')(max_length=2000)),
-            ('body_template', self.gf('django.db.models.fields.TextField')()),
-            ('sender', self.gf('django.db.models.fields.EmailField')(default='', max_length=75, blank=True)),
-            ('base_cc', self.gf('emailtemplates.fields.SeparatedValuesField')(default='', blank=True)),
-            ('base_bcc', self.gf('emailtemplates.fields.SeparatedValuesField')(default='', blank=True)),
-            ('description', self.gf('django.db.models.fields.TextField')()),
-            ('enabled', self.gf('django.db.models.fields.BooleanField')(default=True)),
-            ('edited_date', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('edited_user', self.gf('django.db.models.fields.TextField')(max_length=30, blank=True)),
-        ))
-        db.send_create_signal(u'emailtemplates', ['EmailMessageTemplate'])
+    dependencies = [
+        ('contenttypes', '0001_initial'),
+    ]
 
-        # Adding unique constraint on 'EmailMessageTemplate', fields ['name', 'content_type', 'object_id']
-        db.create_unique(u'emailtemplates_emailmessagetemplate', ['name', 'content_type_id', 'object_id'])
-
-
-    def backwards(self, orm):
-        # Removing unique constraint on 'EmailMessageTemplate', fields ['name', 'content_type', 'object_id']
-        db.delete_unique(u'emailtemplates_emailmessagetemplate', ['name', 'content_type_id', 'object_id'])
-
-        # Deleting model 'EmailMessageTemplate'
-        db.delete_table(u'emailtemplates_emailmessagetemplate')
-
-
-    models = {
-        u'contenttypes.contenttype': {
-            'Meta': {'ordering': "('name',)", 'unique_together': "(('app_label', 'model'),)", 'object_name': 'ContentType', 'db_table': "'django_content_type'"},
-            'app_label': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
-        },
-        u'emailtemplates.emailmessagetemplate': {
-            'Meta': {'ordering': "('name',)", 'unique_together': "(('name', 'content_type', 'object_id'),)", 'object_name': 'EmailMessageTemplate'},
-            'base_bcc': ('emailtemplates.fields.SeparatedValuesField', [], {'default': "''", 'blank': 'True'}),
-            'base_cc': ('emailtemplates.fields.SeparatedValuesField', [], {'default': "''", 'blank': 'True'}),
-            'body_template': ('django.db.models.fields.TextField', [], {}),
-            'content_type': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['contenttypes.ContentType']", 'null': 'True', 'blank': 'True'}),
-            'description': ('django.db.models.fields.TextField', [], {}),
-            'edited_date': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
-            'edited_user': ('django.db.models.fields.TextField', [], {'max_length': '30', 'blank': 'True'}),
-            'enabled': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '50'}),
-            'object_id': ('django.db.models.fields.PositiveIntegerField', [], {'null': 'True', 'blank': 'True'}),
-            'sender': ('django.db.models.fields.EmailField', [], {'default': "''", 'max_length': '75', 'blank': 'True'}),
-            'subject_template': ('django.db.models.fields.CharField', [], {'max_length': '2000'})
-        }
-    }
-
-    complete_apps = ['emailtemplates']
+    operations = [
+        migrations.CreateModel(
+            name='EmailMessageTemplate',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('name', models.CharField(max_length=50)),
+                ('object_id', models.PositiveIntegerField(null=True, verbose_name=b'Related Object ID', blank=True)),
+                ('type', models.CharField(default=b'text/plain', help_text=b'Should email content generated by this template be sent as plain text or HTML?', max_length=20, choices=[(b'text/plain', b'Text'), (b'text/html', b'HTML')])),
+                ('subject_template', models.CharField(max_length=2000, validators=[emailtemplates.fields.validate_template_syntax])),
+                ('body_template_html', models.TextField(blank=True, verbose_name=b'HTML body template', validators=[emailtemplates.fields.validate_template_syntax])),
+                ('autogenerate_text', models.BooleanField(default=True, help_text=b"If checked, this option will cause a plain text version of the HTML email to automatically be created when it is sent.  If you'd like to write the plain text template manually, uncheck this box.")),
+                ('body_template', models.TextField(blank=True, validators=[emailtemplates.fields.validate_template_syntax])),
+                ('sender', models.EmailField(default=b'', help_text=b"The address this email should appear to be sent 'from'.  If blank, defaults to 'None'.", max_length=75, verbose_name=b"'From' Email", blank=True)),
+                ('base_cc', emailtemplates.fields.SeparatedValuesField(default=b'', help_text=b'An optional list of email addresses to be CCed when this template is sent (in addition to any addresses specified when the message is sent)', verbose_name=b'CC', blank=True)),
+                ('base_bcc', emailtemplates.fields.SeparatedValuesField(default=b'', help_text=b'An optional list of email addresses to be BCCed when this template is sent (in addition to any addresses specified when the message is sent)', verbose_name=b'BCC', blank=True)),
+                ('description', models.TextField()),
+                ('enabled', models.BooleanField(default=True, help_text=b'When unchecked, this email will not be sent.')),
+                ('edited_date', models.DateTimeField(auto_now=True)),
+                ('edited_user', models.TextField(max_length=30, editable=False, blank=True)),
+                ('content_type', models.ForeignKey(verbose_name=b'Related Object Type', blank=True, to='contenttypes.ContentType', null=True)),
+            ],
+            options={
+                'ordering': ('name',),
+                'verbose_name': 'Email Template',
+            },
+            bases=(models.Model, django.core.mail.message.EmailMultiAlternatives),
+        ),
+        migrations.AlterUniqueTogether(
+            name='emailmessagetemplate',
+            unique_together=set([('name', 'content_type', 'object_id')]),
+        ),
+    ]
