@@ -1,6 +1,7 @@
 import os
 import sys
 import argparse
+import django
 from django.conf import settings
 
 
@@ -47,6 +48,10 @@ class QuickDjangoTest(object):
             INSTALLED_APPS = self.INSTALLED_APPS + self.apps,
             USE_TZ = True,
         )
+        
+        if django.VERSION >= (1, 7):
+            django.setup()
+        
         from django.test.simple import DjangoTestSuiteRunner
         failures = DjangoTestSuiteRunner().run_tests(self.apps, verbosity=1)
         if failures:
