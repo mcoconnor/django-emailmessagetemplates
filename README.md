@@ -18,7 +18,7 @@ Installation
 ------------
 Django Email Templates is a standard Django app.  To add it to a project, just include `'emailtemplates'` in the `INSTALLED_APPS` section of your `settings.py` file.
 
-If you would like to use text version autogeneration for HTML templates, include the `text_autogen` extras in your install (e.g. `pip install django-emailtemplates [text_autogen]`) 
+If you would like to use text version autogeneration for HTML templates, please also install `html2text`.
 
 Usage
 -----
