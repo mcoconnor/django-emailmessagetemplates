@@ -30,12 +30,10 @@ setup(
     author='Michael O''Connor',
     author_email='michael@mcoconnor.net',
     url='https://github.com/mcoconnor/django-emailmessagetemplates',
-    packages=[
-        'emailmessagetemplates',
-    ],
+    packages=['emailmessagetemplates',],
     include_package_data=True,
-    install_requires=[
-    ],
+    install_requires=['django-appconf',],
+    extras_require = {'text_autogen':  ["html2text"],},
     license="BSD",
     zip_safe=False,
     keywords=['django','email','template'],
