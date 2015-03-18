@@ -22,11 +22,12 @@ matrix:
       env: DJANGO_VERSION="django==1.8b2"
         
 # Package installation
-install:
-  - pip install argparse --use-mirrors
-  - pip install -r requirements.txt --use-mirrors 
+install: 
   - pip install $DJANGO_VERSION --use-mirrors
-  - python setup.py install
+  - pip install -r requirements-test.txt --use-mirrors
   
 # Run the tests
-script: python quicktest.py emailtemplates
+script: coverage run --source emailmessagetemplates runtests.py emailmessagetemplates
+
+# report coverage to coveralls.io
+after_success: coveralls

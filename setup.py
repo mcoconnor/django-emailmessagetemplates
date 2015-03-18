@@ -1,35 +1,55 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import os
+import sys
+
+import emailmessagetemplates
 
 try:
     from setuptools import setup
 except ImportError:
     from distutils.core import setup
 
+version = emailmessagetemplates.__version__
+
+if sys.argv[-1] == 'publish':
+    os.system('python setup.py sdist upload')
+    print("You probably want to also tag the version now:")
+    print("  git tag -a %s -m 'version %s'" % (version, version))
+    print("  git push --tags")
+    sys.exit()
+
+readme = open('README.rst').read()
+history = open('HISTORY.rst').read().replace('.. :changelog:', '')
+
 setup(
-    name='django-emailtemplates',
-    version='0.1',
-    description='Templating system for application-generated emails',
+    name='django-emailmessagetemplates',
+    version=version,
+    description="""A Django app that allows users to edit email content with an easy-to-integrate developer API.""",
+    long_description=readme + '\n\n' + history,
     author='Michael O''Connor',
     author_email='michael@mcoconnor.net',
-    url='https://github.com/mcoconnor/django-emailtemplates',
-    license='MIT',
-    packages=['emailtemplates'],
-    install_requires=[
-        'django-appconf',
+    url='https://github.com/mcoconnor/django-emailmessagetemplates',
+    packages=[
+        'emailmessagetemplates',
     ],
-    extras_require = {
-        'text_autogen':  ["html2text"],
-    },
     include_package_data=True,
+    install_requires=[
+    ],
+    license="BSD",
     zip_safe=False,
-    platforms=['any'],
+    keywords=['django','email','template'],
     classifiers=[
         'Development Status :: 4 - Beta',
-        'Environment :: Web Environment',
-        'Intended Audience :: Developers',
-        'License :: Other/Proprietary License',
-        'Operating System :: OS Independent',
-        'Programming Language :: Python',
         'Framework :: Django',
-    ]
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: BSD License',
+        'Natural Language :: English',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.6',
+        'Programming Language :: Python :: 2.7',
+        'Operating System :: OS Independent',  
+        'Environment :: Web Environment',
+    ],
 )
