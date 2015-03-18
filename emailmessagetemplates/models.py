@@ -62,7 +62,7 @@ class EmailMessageTemplate(models.Model, EmailMultiAlternatives):
     body_template_html = models.TextField(validators=[validate_template_syntax], blank=True, verbose_name="HTML body template")
     autogenerate_text = models.BooleanField(default=True, help_text="If checked, this option will cause a plain text version of the HTML email to automatically be created when it is sent.  If you'd like to write the plain text template manually, uncheck this box.")
     body_template = models.TextField(validators=[validate_template_syntax], blank=True)
-    sender = models.EmailField(max_length=75, blank=True, default='', verbose_name="'From' Email", help_text="The address this email should appear to be sent 'from'.  If blank, defaults to '{0}'.".format(settings.EMAILTEMPLATES_DEFAULT_FROM_EMAIL))
+    sender = models.EmailField(max_length=75, blank=True, default='', verbose_name="'From' Email", help_text="The address this email should appear to be sent 'from'.  If blank, defaults to '{0}'.".format(settings.EMAILMESSAGETEMPLATES_DEFAULT_FROM_EMAIL))
     base_cc = SeparatedValuesField(blank=True, default='', verbose_name="CC", help_text="An optional list of email addresses to be CCed when this template is sent (in addition to any addresses specified when the message is sent)")
     base_bcc = SeparatedValuesField(blank=True, default='', verbose_name="BCC", help_text="An optional list of email addresses to be BCCed when this template is sent (in addition to any addresses specified when the message is sent)")
 
@@ -131,7 +131,7 @@ class EmailMessageTemplate(models.Model, EmailMultiAlternatives):
         sender, and finally the setting value.
         """
         return self._instance_from or self.sender or\
-            settings.EMAILTEMPLATES_DEFAULT_FROM_EMAIL or\
+            settings.EMAILMESSAGETEMPLATES_DEFAULT_FROM_EMAIL or\
             settings.DEFAULT_FROM_EMAIL
 
     @from_email.setter
@@ -199,7 +199,7 @@ class EmailMessageTemplate(models.Model, EmailMultiAlternatives):
         return None
     
     def is_html_message(self):
-        return settings.EMAILTEMPLATES_ALLOW_HTML_MESSAGES \
+        return settings.EMAILMESSAGETEMPLATES_ALLOW_HTML_MESSAGES \
             and self.type == 'text/html'
         
                         
@@ -242,4 +242,4 @@ class EmailMessageTemplate(models.Model, EmailMultiAlternatives):
         ordering = ('name',)
         unique_together = (("name", "content_type", "object_id"),)
         verbose_name = "Email Template"
-        app_label = "emailtemplates"
+        app_label = "emailmessagetemplates"

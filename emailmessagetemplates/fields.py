@@ -5,7 +5,7 @@ from django.template import Context, Template, TemplateSyntaxError
 
 if 'south' in settings.INSTALLED_APPS:
     from south.modelsinspector import add_introspection_rules
-    add_introspection_rules([], ["^emailtemplates\.fields\.SeparatedValuesField"])
+    add_introspection_rules([], ["^emailmessagetemplates\.fields\.SeparatedValuesField"])
 
 class SeparatedValuesField(models.TextField):
     """

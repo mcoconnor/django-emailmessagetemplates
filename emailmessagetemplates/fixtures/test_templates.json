@@ -17,7 +17,7 @@
 },
 {
   "pk": 1, 
-  "model": "emailtemplates.emailmessagetemplate", 
+  "model": "emailmessagetemplates.emailmessagetemplate", 
   "fields": {
     "edited_user": "", 
     "autogenerate_text": false, 
@@ -38,7 +38,7 @@
 },
 {
   "pk": 2, 
-  "model": "emailtemplates.emailmessagetemplate", 
+  "model": "emailmessagetemplates.emailmessagetemplate", 
   "fields": {
     "edited_user": "", 
     "autogenerate_text": false, 
@@ -59,7 +59,7 @@
 },
 {
   "pk": 3, 
-  "model": "emailtemplates.emailmessagetemplate", 
+  "model": "emailmessagetemplates.emailmessagetemplate", 
   "fields": {
     "edited_user": "", 
     "autogenerate_text": false, 
@@ -80,7 +80,7 @@
 },
 {
   "pk": 4, 
-  "model": "emailtemplates.emailmessagetemplate", 
+  "model": "emailmessagetemplates.emailmessagetemplate", 
   "fields": {
     "edited_user": "", 
     "autogenerate_text": true, 
@@ -104,7 +104,7 @@
 },
 {
   "pk": 5, 
-  "model": "emailtemplates.emailmessagetemplate", 
+  "model": "emailmessagetemplates.emailmessagetemplate", 
   "fields": {
     "edited_user": "", 
     "autogenerate_text": false, 
@@ -128,7 +128,7 @@
 },
 {
   "pk": 6, 
-  "model": "emailtemplates.emailmessagetemplate", 
+  "model": "emailmessagetemplates.emailmessagetemplate", 
   "fields": {
     "edited_user": "", 
     "autogenerate_text": false, 
@@ -149,7 +149,7 @@
 },
 {
   "pk": 7, 
-  "model": "emailtemplates.emailmessagetemplate", 
+  "model": "emailmessagetemplates.emailmessagetemplate", 
   "fields": {
     "edited_user": "", 
     "autogenerate_text": true, 
@@ -170,7 +170,7 @@
 },
 {
   "pk": 8, 
-  "model": "emailtemplates.emailmessagetemplate", 
+  "model": "emailmessagetemplates.emailmessagetemplate", 
   "fields": {
     "edited_user": "", 
     "autogenerate_text": false, 
