@@ -7,7 +7,7 @@ In many cases, users will want to be able to edit the emails sent by your applic
 
 Requirements
 ------------
-Django Email Templates supports versions 1.4-1.8 of Django under Python 2.6 and 2.7.
+Django Email Templates supports versions 1.4-1.7 of Django under Python 2.6 and 2.7.
 [![Build Status](https://travis-ci.org/mcoconnor/django-emailmessagetemplates.svg?branch=master)](https://travis-ci.org/mcoconnor/django-emailmessagetemplates)  
 
 * [django-appconf](https://pypi.python.org/pypi/django-appconf/0.6) is the only external dependency.

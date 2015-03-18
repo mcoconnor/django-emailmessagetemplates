@@ -10,7 +10,6 @@ env:
   - DJANGO_VERSION="django>=1.5,<1.6"
   - DJANGO_VERSION="django>=1.6,<1.7"
   - DJANGO_VERSION="django>=1.7,<1.8"
-  - DJANGO_VERSION="django==1.8b2"
   
 matrix:
   exclude:
@@ -18,8 +17,6 @@ matrix:
       env: DJANGO_VERSION="django>=1.6,<1.7"
     - python: "2.6"
       env: DJANGO_VERSION="django>=1.7,<1.8"
-    - python: "2.6"
-      env: DJANGO_VERSION="django==1.8b2"
         
 # Package installation
 install: 
