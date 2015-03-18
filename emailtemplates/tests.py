@@ -76,11 +76,13 @@ class TemplateRetrievalTest(TestCase):
 class TemplatePreparationTest(TestCase):
     """
     Ensure that template data is correctly produced when a template is 
-    instantiated and prepared for sending.  This includes assemling the From, CC 
+    instantiated and prepared for sending.  This includes assembling the From, CC 
     and BCC address lists and rendering the subject and body templates. 
     """
     fixtures = ['test_templates',]
-    context = {'hello': '*HELLO*', 'world': '*WORLD*'}
+    
+    def setUp(self):
+        self.context = {'hello': '*HELLO*', 'world': '*WORLD*'}
 
     # Ensure the sender address is set correctly
     def test_default_from(self):
@@ -234,7 +236,9 @@ class TemplateSendingTest(TestCase):
     Ensure that the emails are actually composed and sent successfully
     """
     fixtures = ['test_templates',]
-    context = {'hello': '*HELLO*', 'world': '*WORLD*'}
+    
+    def setUp(self):
+        self.context = {'hello': '*HELLO*', 'world': '*WORLD*'}
 
     # Email sending
     def test_send_email_success(self):
@@ -266,7 +270,9 @@ class HTMLTemplateTest(TestCase):
     autogenerating content a required. 
     """
     fixtures = ['test_templates',]
-    context = {'hello': '*HELLO*', 'world': '*WORLD*'}
+    
+    def setUp(self):
+        self.context = {'hello': '*HELLO*', 'world': '*WORLD*'}
     
     def test_html_attachment(self):
         """Ensure that html content is included in HTML messages"""
@@ -370,10 +376,13 @@ class UtilityFunctionTest(TestCase):
     Test the behavior of the 4 utility functions: send_mail, send_mass_mail, 
     mail_admins, mail_managers
     """
+    
     fixtures = ['test_templates',]
-    context = {'hello': '*HELLO*', 'world': '*WORLD*'}
-    context2 = {'hello': '-GOODBYE-', 'world': '-EARTH-'}
-
+    
+    def setUp(self):
+        self.context = {'hello': '*HELLO*', 'world': '*WORLD*'}
+        self.context2 = {'hello': '-GOODBYE-', 'world': '-EARTH-'}
+ 
     def test_send_mail(self):
         """Ensure the send_mail function works"""
         send_mail("Template 1", context=self.context, 
