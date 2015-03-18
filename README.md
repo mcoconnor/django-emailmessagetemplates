@@ -8,7 +8,9 @@ In many cases, users will want to be able to edit the emails sent by your applic
 Requirements
 ------------
 Django Email Templates supports versions 1.4-1.7 of Django under Python 2.6 and 2.7.
+
 [![Build Status](https://travis-ci.org/mcoconnor/django-emailmessagetemplates.svg?branch=master)](https://travis-ci.org/mcoconnor/django-emailmessagetemplates)  
+[![Coverage Status](https://coveralls.io/repos/mcoconnor/django-emailmessagetemplates/badge.svg?branch=master)](https://coveralls.io/r/mcoconnor/django-emailmessagetemplates?branch=master)
 
 * [django-appconf](https://pypi.python.org/pypi/django-appconf/0.6) is the only external dependency.
 * [html2text](https://pypi.python.org/pypi/html2text) is required to use the text autogeneration functionality.   
