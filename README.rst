@@ -32,7 +32,7 @@ To add it to a project, just include ``'emailmessagetemplates'`` in the
 
 If you would like to use text version autogeneration for HTML templates, 
 include the `text_autogen` extras in your install (e.g. 
-``pip install django-emailmessagetemplates [text_autogen]``) or ensure 
+``pip install django-emailmessagetemplates[text_autogen]``) or ensure 
 you've installed ``html2text`` separately.
 
 Usage
