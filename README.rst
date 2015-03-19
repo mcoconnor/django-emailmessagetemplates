@@ -25,12 +25,15 @@ Django Email Templates supports versions 1.4-1.7 of Django under Python
 Installation
 ------------
 
-Django Email Templates is a standard Django app. To add it to a project,
-just include ``'emailmessagetemplates'`` in the ``INSTALLED_APPS``
-section of your ``settings.py`` file.
+Django Email Templates is a standard Django app. 
 
-If you would like to use text version autogeneration for HTML templates,
-please also install ``html2text``.
+To add it to a project, just include ``'emailmessagetemplates'`` in the 
+``INSTALLED_APPS`` section of your ``settings.py`` file.
+
+If you would like to use text version autogeneration for HTML templates, 
+include the `text_autogen` extras in your install (e.g. 
+``pip install django-emailmessagetemplates [text_autogen]``) or ensure 
+you've installed ``html2text`` separately.
 
 Usage
 -----
