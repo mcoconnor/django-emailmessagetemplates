@@ -122,7 +122,7 @@ class EmailMessageTemplate(models.Model, EmailMultiAlternatives):
         """
         Add any addresses not in the template's BCC list to the instance list.
         """
-        self._instance_bcc = list(set(value) - set(self.base_cc if self.base_bcc is not None else []))
+        self._instance_bcc = list(set(value) - set(self.base_bcc if self.base_bcc is not None else []))
 
     @property
     def from_email(self):
