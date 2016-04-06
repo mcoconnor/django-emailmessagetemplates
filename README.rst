@@ -47,7 +47,8 @@ recipients, and other data, and then call the ``send`` method. For
 example:
 
 ::
-
+    from emailmessagetemplates.models import EmailMessageTemplate
+    
     t = EmailMessageTemplate.objects.get(name='Hello World')
     t.context = {'a':'hello','b':'world'}
     t.to = ['michael@mcoconnor.net',]
@@ -79,7 +80,9 @@ message templates. These include ``send_mail``, ``send_mass_mail``,
 ``mail_admins``, ``mail_managers`` and are used similarly:
 
 ::
-
+    from emailmessagetemplates.utils import send_mail, send_mass_mail, \
+        mail_admins, mail_managers
+    
     send_mail(name, related_object=None, context={}, from_email=None,
               recipient_list=[], fail_silently=False, auth_user=None,
               auth_password=None, connection=None)
