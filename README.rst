@@ -1,7 +1,7 @@
 Django Email Templates
 ======================
 
-© 2015 Michael O’Connor, http://www.mcoconnor.net
+© 2016 Michael O’Connor, http://www.mcoconnor.net
 https://github.com/mcoconnor/django-emailmessagetemplates
 
 In many cases, users will want to be able to edit the emails sent by
@@ -12,7 +12,7 @@ edit email content with an easy-to-integrate developer API.
 Requirements
 ------------
 
-Django Email Templates supports versions 1.4-1.7 of Django under Python
+Django Email Templates supports versions 1.4-1.9 of Django under Python
 2.6 and 2.7.
 
 | |Build Status| |Coverage Status|
