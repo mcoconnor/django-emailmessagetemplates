@@ -1,7 +1,7 @@
 Django Email Templates
 ======================
 
-© 2016 Michael O’Connor, http://www.mcoconnor.net
+© 2019 Michael O’Connor, http://www.mcoconnor.net
 https://github.com/mcoconnor/django-emailmessagetemplates
 
 In many cases, users will want to be able to edit the emails sent by
@@ -12,15 +12,13 @@ edit email content with an easy-to-integrate developer API.
 Requirements
 ------------
 
-Django Email Templates supports versions 1.4-1.9 of Django under Python
-2.6 and 2.7.
+Django Email Templates supports versions 1.9-1.11 of Django under Python 2.7.
 
 | |Build Status| |Coverage Status|
 
 -  `django-appconf`_ is the only external dependency.
 -  `html2text`_ is required to use the text autogeneration
    functionality.
--  `South`_ is supported but not required (for Django<1.7).
 
 Installation
 ------------
@@ -139,49 +137,10 @@ Default: False
 If true, templates can produce HTML-formatted messages and provide
 plain-text alternative content. Enabling this option will display
 additional fields in the Django admin form and will enable HTML
-generation for templates that have a ``type`` of ``text/html``.
-
-Migrations
-----------
-
-Django-emailmessagetemplates provides database migrations using both
-South and Django’s built-in migration system. You can apply the
-migrations as follows:
-
-**If you’re using Django >= 1.7 and the built-in migration system:**
-
-::
-
-    python manage.py migrate emailmessagetemplates   
-
-**If you’re using Django < 1.7 and South >= 1.0:**
-
-::
-
-    python manage.py syncdb
-    python manage.py migrate emailmessagetemplates   
-
-**If you’re using Django < 1.7 and South < 1.0:**
-
-Include ``emailmessagetemplates`` in your ``SOUTH_MIGRATION_MODULES``
-setting, like
-
-::
-
-    SOUTH_MIGRATION_MODULES = {
-        'emailmessagetemplates': 'emailmessagetemplates.south_migrations',
-    }
-
-The run the standard migration commands:
-
-::
-
-    python manage.py syncdb
-    python manage.py migrate emailmessagetemplates   
+generation for templates that have a ``type`` of ``text/html``. 
 
 .. _django-appconf: https://pypi.python.org/pypi/django-appconf/0.6
 .. _html2text: https://pypi.python.org/pypi/html2text
-.. _South: http://south.aeracode.org/
 
 .. |Build Status| image:: https://travis-ci.org/mcoconnor/django-emailmessagetemplates.svg?branch=master
    :target: https://travis-ci.org/mcoconnor/django-emailmessagetemplates
