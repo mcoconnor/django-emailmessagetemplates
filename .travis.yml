@@ -8,15 +8,6 @@ env:
   - DJANGO_VERSION="django>=1.9,<1.10"
   - DJANGO_VERSION="django>=1.10,<1.11"
   - DJANGO_VERSION="django>=1.11,<1.12"
-  
-matrix:
-  exclude:
-    - python: "2.7"
-      env: DJANGO_VERSION="django>=1.9,<1.10"
-    - python: "2.7"
-      env: DJANGO_VERSION="django>=1.10,<1.11"
-    - python: "2.7"
-      env: DJANGO_VERSION="django>=1.11,<1.12"
         
 # Package installation
 install: 
