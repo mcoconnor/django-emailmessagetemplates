@@ -11,8 +11,8 @@ env:
         
 # Package installation
 install: 
-  - pip install $DJANGO_VERSION --use-mirrors
-  - pip install -r requirements-test.txt --use-mirrors
+  - pip install $DJANGO_VERSION
+  - pip install -r requirements-test.txt
   
 # Run the tests
 script: coverage run --source emailmessagetemplates runtests.py emailmessagetemplates
