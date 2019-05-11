@@ -20,6 +20,21 @@ try:
         ],
         SITE_ID=1,
         NOSE_ARGS=['-s'],
+        TEMPLATES = [
+            {
+                'BACKEND': 'django.template.backends.django.DjangoTemplates',
+                'DIRS': [],
+                'APP_DIRS': True,
+                'OPTIONS': {
+                    'context_processors': [
+                        'django.template.context_processors.debug',
+                        'django.template.context_processors.request',
+                        'django.contrib.auth.context_processors.auth',
+                        'django.contrib.messages.context_processors.messages',
+                    ],
+                },
+            },
+        ],
     )
 
     try:
@@ -39,7 +54,7 @@ except ImportError:
 
 def run_tests(*test_args):
     if not test_args:
-        test_args = ['tests']
+        test_args = ['emailmessagetemplates.tests']
 
     # Run tests
     test_runner = NoseTestSuiteRunner(verbosity=1)
