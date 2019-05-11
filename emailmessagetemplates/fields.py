@@ -11,15 +11,23 @@ class SeparatedValuesField(models.TextField):
     """
     Adapted from http://justcramer.com/2008/08/08/custom-fields-in-django/
     """
-    __metaclass__ = models.SubfieldBase
 
     def __init__(self, *args, **kwargs):
         self.token = kwargs.pop('token', ',')
         super(SeparatedValuesField, self).__init__(*args, **kwargs)
 
     def to_python(self, value):
+        if value is None:
+            return value
+        if isinstance(value, list):
+            return value
+        return value.split(self.token)
+
+    def from_db_value(self, value, expression, connection, context):
+        if value is None:
+            return value
         if not value:
-            return
+            return []
         if isinstance(value, list):
             return value
         return value.split(self.token)
